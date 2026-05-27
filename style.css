@@ -1,0 +1,271 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #eef1f4;
+  color: #17202a;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 92px;
+  background: #1f2933;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 5px solid #4d8fd6;
+}
+
+.topbar h1 { margin: 0; font-size: 30px; }
+.topbar p { margin: 4px 0 0; opacity: .8; }
+
+.week-controls { display: flex; gap: 14px; align-items: center; }
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  background: #ffffff;
+  color: #17202a;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+
+button:hover { transform: translateY(-1px); }
+
+.week-badge {
+  font-size: 24px;
+  font-weight: 800;
+  background: #4d8fd6;
+  padding: 10px 18px;
+  border-radius: 14px;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  height: calc(100vh - 92px);
+}
+
+.toolbox {
+  padding: 18px;
+  background: #ffffff;
+  border-right: 1px solid #d9dde3;
+  overflow-y: auto;
+}
+
+.toolbox button {
+  width: 100%;
+  margin-bottom: 12px;
+  background: #4d8fd6;
+  color: white;
+}
+
+.toolbox .danger { background: #c0392b; }
+
+.toolbox h2 {
+  margin: 24px 0 10px;
+  font-size: 20px;
+  border-top: 1px solid #d9dde3;
+  padding-top: 14px;
+}
+
+.magnet-list { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.magnet {
+  user-select: none;
+  padding: 10px 13px;
+  border-radius: 999px;
+  background: #ffe082;
+  border: 2px solid #d4a72c;
+  font-weight: 800;
+  cursor: grab;
+  box-shadow: 0 2px 5px rgba(0,0,0,.18);
+}
+
+.magnet.vehicle {
+  background: #c8e6c9;
+  border-color: #66a668;
+}
+
+.hint {
+  margin-top: 24px;
+  line-height: 1.35;
+  font-size: 14px;
+  color: #52616f;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(300px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  overflow: auto;
+}
+
+.day-column {
+  min-width: 330px;
+  background: #dfe5ec;
+  border-radius: 18px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  border: 3px solid transparent;
+}
+
+.day-column.drag-over {
+  border-color: #4d8fd6;
+  background: #d7e8fb;
+}
+
+.day-column h2 {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 24px;
+  color: #1f2933;
+}
+
+.dropzone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 400px;
+}
+
+.note {
+  position: relative;
+  background: #fffdf5;
+  border: 2px solid #222;
+  border-radius: 6px;
+  padding: 44px 14px 12px;
+  box-shadow: 0 7px 16px rgba(0,0,0,.22);
+  cursor: grab;
+  width: 950px;
+  max-width: 950px;
+  min-height: 330px;
+}
+
+.note:active { cursor: grabbing; }
+
+.note-actions {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.note-actions button {
+  padding: 4px 9px;
+  font-size: 14px;
+  border-radius: 7px;
+  box-shadow: none;
+  background: #1f2933;
+  color: white;
+}
+
+.note-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;
+}
+
+.field {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.field canvas {
+  height: 34px;
+  background:
+    linear-gradient(to bottom, transparent 0 28px, #222 29px, #222 31px, transparent 32px);
+  border: none;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.field.full canvas {
+  height: 38px;
+  background:
+    linear-gradient(to bottom, transparent 0 32px, #222 33px, #222 35px, transparent 36px);
+}
+
+.field b {
+  font-size: 12px;
+  margin-left: -4px;
+}
+
+.check {
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  accent-color: #2f4b63;
+}
+
+.row-6 {
+  margin-top: 16px;
+  justify-content: space-between;
+}
+
+.assigned {
+  min-height: 64px;
+  margin-top: 18px;
+  padding: 12px;
+  border: 2px dashed #adb5bd;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.65);
+}
+
+.assigned:empty::before {
+  content: "Monteure/Fahrzeuge hier ablegen";
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.assigned .magnet {
+  cursor: default;
+  font-size: 14px;
+  padding: 8px 11px;
+}
+
+.canvas-tools {
+  text-align: right;
+  margin-top: 7px;
+}
+
+.canvas-tools button {
+  padding: 7px 10px;
+  font-size: 13px;
+  box-shadow: none;
+  background: #e8edf3;
+  color: #1f2933;
+}
+
+@media (max-width: 1200px) {
+  body { overflow: auto; }
+  main { height: auto; }
+}

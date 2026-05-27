@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digitale Magnetwand – Demo V2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Digitale Magnetwand</h1>
+      <p>Demo für Projekt- und Monteurplanung</p>
+    </div>
+    <div class="week-controls">
+      <button id="prevWeek">← Vorherige KW</button>
+      <div class="week-badge">KW <span id="weekNumber">1</span> / 52</div>
+      <button id="nextWeek">Nächste KW →</button>
+    </div>
+  </header>
+
+  <main>
+    <aside class="toolbox">
+      <button id="addNote">+ Neuer Zettel</button>
+      <button id="addSample">Musterzettel</button>
+      <button id="clearWeek" class="danger">KW leeren</button>
+
+      <h2>Monteure</h2>
+      <div class="magnet-list">
+        <div class="magnet" draggable="true">Kevin</div>
+        <div class="magnet" draggable="true">Marcel</div>
+        <div class="magnet" draggable="true">Andrej</div>
+        <div class="magnet" draggable="true">Sven</div>
+        <div class="magnet" draggable="true">Tom</div>
+      </div>
+
+      <h2>Fahrzeuge</h2>
+      <div class="magnet-list">
+        <div class="magnet vehicle" draggable="true">Sprinter 1</div>
+        <div class="magnet vehicle" draggable="true">Crafter 2</div>
+        <div class="magnet vehicle" draggable="true">Anhänger</div>
+      </div>
+
+      <p class="hint">
+        Tipp: Zettel zwischen den Tagen verschieben. In die Linienfelder klicken und mit Maus/Stift schreiben.
+        Monteure und Fahrzeuge per Drag & Drop zuordnen.
+      </p>
+    </aside>
+
+    <section class="board" id="board">
+      <div class="day-column" data-day="Montag"><h2>Montag</h2><div class="dropzone"></div></div>
+      <div class="day-column" data-day="Dienstag"><h2>Dienstag</h2><div class="dropzone"></div></div>
+      <div class="day-column" data-day="Mittwoch"><h2>Mittwoch</h2><div class="dropzone"></div></div>
+      <div class="day-column" data-day="Donnerstag"><h2>Donnerstag</h2><div class="dropzone"></div></div>
+      <div class="day-column" data-day="Freitag"><h2>Freitag</h2><div class="dropzone"></div></div>
+    </section>
+  </main>
+
+  <template id="noteTemplate">
+    <article class="note" draggable="true">
+      <div class="note-actions">
+        <button class="duplicate" title="Kopieren">⧉</button>
+        <button class="delete" title="Löschen">×</button>
+      </div>
+
+      <div class="note-row row-1">
+        <div class="field wide"><span>Auftraggeber:</span><canvas data-field="auftraggeber" width="250" height="34"></canvas></div>
+        <div class="field wide"><span>BV:</span><canvas data-field="bv" width="300" height="34"></canvas></div>
+        <label class="check"><input type="checkbox" data-check="mz"> MZ</label>
+        <label class="check"><input type="checkbox" data-check="cl"> CL</label>
+        <label class="check"><input type="checkbox" data-check="as"> AS</label>
+      </div>
+
+      <div class="note-row row-2">
+        <div class="field short"><span>P-</span><canvas data-field="p" width="120" height="34"></canvas></div>
+        <div class="field mid"><span>Ort:</span><canvas data-field="ort" width="190" height="34"></canvas></div>
+        <div class="field mid"><span>Bauträger:</span><canvas data-field="bautraeger" width="220" height="34"></canvas></div>
+      </div>
+
+      <div class="note-row row-3">
+        <div class="field mid"><span>Etage:</span><canvas data-field="etage" width="170" height="34"></canvas></div>
+        <div class="field short"><span>Fläche:</span><canvas data-field="flaeche" width="100" height="34"></canvas><b>[m²]</b></div>
+        <div class="field short"><span>HK:</span><canvas data-field="hk" width="100" height="34"></canvas></div>
+        <div class="field short"><span>Rohr:</span><canvas data-field="rohr" width="110" height="34"></canvas></div>
+      </div>
+
+      <div class="note-row row-4">
+        <div class="field mid"><span>Termin:</span><canvas data-field="termin" width="230" height="34"></canvas></div>
+        <div class="field short"><span>Estrich:</span><canvas data-field="estrich" width="120" height="34"></canvas></div>
+        <div class="field short"><span>TW:</span><canvas data-field="tw" width="120" height="34"></canvas></div>
+      </div>
+
+      <div class="note-row row-5">
+        <div class="field full"><span>Sonstiges:</span><canvas data-field="sonstiges" width="650" height="38"></canvas></div>
+      </div>
+
+      <div class="note-row row-6">
+        <label class="check"><input type="checkbox" data-check="materialliste"> Materialliste</label>
+        <label class="check"><input type="checkbox" data-check="angefahren"> Angefahren</label>
+        <label class="check"><input type="checkbox" data-check="nurrohr"> Nur Rohr</label>
+        <label class="check"><input type="checkbox" data-check="systemrohr"> System + Rohr</label>
+        <div class="field sum"><span>Summe Monteure:</span><canvas data-field="summe" width="70" height="34"></canvas></div>
+      </div>
+
+      <div class="assigned"></div>
+
+      <div class="canvas-tools">
+        <button class="clear-writing">Handschrift leeren</button>
+      </div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
