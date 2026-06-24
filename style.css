@@ -562,3 +562,15 @@ input[type="checkbox"] {
   background: #ffe1e1;
   border-style: solid;
 }
+
+.note {
+  z-index: 1;
+}
+
+.note.minimized {
+  z-index: 1;
+}
+
+.note:not(.minimized) {
+  z-index: 50;
+}
