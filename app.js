@@ -576,6 +576,7 @@ function renderOneSlotList(containerId, items, cls) {
 
   items.forEach(name => {
     const el = document.createElement("div");
+    el.dataset.sourceType = cls === "vehicle" ? "vehicle" : "worker";
     el.className = "magnet " + cls;
     el.draggable = true;
     el.textContent = name;
@@ -631,3 +632,33 @@ function loadPeople() {
     // leer lassen
   }
 }
+
+const trashBin = document.getElementById("trashBin");
+
+trashBin.addEventListener("dragover", e => {
+  e.preventDefault();
+  trashBin.classList.add("drag-over");
+});
+
+trashBin.addEventListener("dragleave", () => {
+  trashBin.classList.remove("drag-over");
+});
+
+trashBin.addEventListener("drop", e => {
+  e.preventDefault();
+  trashBin.classList.remove("drag-over");
+
+  if (!dragMagnetText) return;
+
+  const confirmed = confirm(`"${dragMagnetText}" wirklich aus der Liste löschen?`);
+  if (!confirmed) return;
+
+  workers = workers.filter(name => name !== dragMagnetText);
+  vehicles = vehicles.filter(name => name !== dragMagnetText);
+
+  savePeople();
+  renderSlotLists();
+
+  dragMagnetText = null;
+  dragMagnetClass = "";
+});
