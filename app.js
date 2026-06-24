@@ -172,6 +172,15 @@ function createNoteElement(day, noteData) {
 
   clone.querySelector(".toggle-note").addEventListener("click", e => {
     e.stopPropagation();
+
+    const willMinimize = !clone.classList.contains("minimized");
+
+    if (willMinimize) {
+      clone.querySelectorAll(".checklist-panel").forEach(panel => {
+        panel.classList.add("hidden");
+      });
+    }
+
     clone.classList.toggle("minimized");
     saveCurrentBoard();
   });
