@@ -63,18 +63,33 @@ button:hover {
 
 main {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 44px 340px 1fr;
   height: calc(100vh - 92px);
   transition: grid-template-columns .25s ease;
   position: relative;
 }
 
 body.menu-collapsed main {
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 44px 0 1fr;
 }
 
 body.menu-collapsed .toolbox {
   display: none;
+}
+
+.menu-toggle {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.toolbox {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.board {
+  grid-column: 3;
+  grid-row: 1;
 }
 
 .menu-toggle {
