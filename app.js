@@ -1,3 +1,28 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBCE0F_9qFQPl-qEck3RxnHrOZ7mi4p48c",
+  authDomain: "digitale-projektplanung.firebaseapp.com",
+  projectId: "digitale-projektplanung",
+  storageBucket: "digitale-projektplanung.firebasestorage.app",
+  messagingSenderId: "436456184614",
+  appId: "1:436456184614:web:c6187f6f183e7f3cc83fe7",
+  measurementId: "G-HGGN8SQ3NL"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+
+const planningRef = doc(db, "planning", "main");
+const peopleRef = doc(db, "people", "main");
+
 const DAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
 const year = new Date().getFullYear();
 const STORAGE_KEY = "digitaleMagnetwandDemo_v2";
@@ -19,8 +44,6 @@ let vehicles = [
   "Sprinter 1", "Crafter 2", "Anhänger",
   "Fahrzeug 04", "Fahrzeug 05", "Fahrzeug 06"
 ];
-
-loadPeople();
 
 const weekNumber = document.getElementById("weekNumber");
 const template = document.getElementById("noteTemplate");
@@ -57,8 +80,6 @@ document.getElementById("clearWeek").addEventListener("click", () => {
     renderWeek();
   }
 });
-
-renderSlotLists();
 
 document.getElementById("addWorker").addEventListener("click", () => {
   addToSlotList("worker");
@@ -99,15 +120,22 @@ columns.forEach(column => {
 });
 
 function loadData() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { weeks: {} };
-  } catch {
-    return { weeks: {} };
+  return { weeks: {} };
+}
+
+async function loadDataFromFirestore() {
+  const snap = await getDoc(planningRef);
+
+  if (snap.exists()) {
+    data = snap.data();
+  } else {
+    data = { weeks: {} };
+    await saveData();
   }
 }
 
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+async function saveData() {
+  await setDoc(planningRef, data);
 }
 
 function emptyWeek() {
@@ -536,7 +564,15 @@ function makeTextImage(text, width, height) {
 
 window.addEventListener("beforeunload", saveCurrentBoard);
 
-renderWeek();
+startApp();
+
+async function startApp() {
+  await loadDataFromFirestore();
+  await loadPeople();
+
+  renderSlotLists();
+  renderWeek();
+}
 
 function updateWeekDates() {
 
@@ -626,20 +662,23 @@ function addToSlotList(type) {
   input.value = "";
 }
 
-function savePeople() {
-  localStorage.setItem(PEOPLE_STORAGE_KEY, JSON.stringify({
+async function savePeople() {
+  await setDoc(peopleRef, {
     workers,
     vehicles
-  }));
+  });
 }
 
-function loadPeople() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(PEOPLE_STORAGE_KEY));
-    if (saved && Array.isArray(saved.workers)) workers = saved.workers;
-    if (saved && Array.isArray(saved.vehicles)) vehicles = saved.vehicles;
-  } catch {
-    // leer lassen
+async function loadPeople() {
+  const snap = await getDoc(peopleRef);
+
+  if (snap.exists()) {
+    const saved = snap.data();
+
+    if (Array.isArray(saved.workers)) workers = saved.workers;
+    if (Array.isArray(saved.vehicles)) vehicles = saved.vehicles;
+  } else {
+    await savePeople();
   }
 }
 
