@@ -108,7 +108,12 @@ function addNote(day, noteData = null) {
     id: crypto.randomUUID(),
     writings: {},
     checks: {},
-    assigned: []
+    assigned: [],
+    minimized: true,
+    checklists: {
+      bauleitung: Array(15).fill(false),
+      prozess: Array(15).fill(false)
+    }
   };
   const finalData = noteData || empty;
   getWeek()[day].push(finalData);
@@ -141,18 +146,35 @@ function addSampleNote() {
       angefahren: true,
       systemrohr: true
     },
+    minimized: true,
+    checklists: {
+      bauleitung: [true, true, false, false, false, false, false, false, false, false, false, false, false, false, false],
+      prozess: Array(15).fill(false)
+    },
     assigned: [
       { text: "Kevin", cls: "" },
       { text: "Marcel", cls: "" },
       { text: "Sven", cls: "" },
       { text: "Sprinter 1", cls: "vehicle" }
     ]
+
   });
+
 }
 
 function createNoteElement(day, noteData) {
   const clone = template.content.firstElementChild.cloneNode(true);
   clone.dataset.noteId = noteData.id;
+
+  if (noteData.minimized !== false) {
+    clone.classList.add("minimized");
+  }
+
+  clone.querySelector(".toggle-note").addEventListener("click", e => {
+    e.stopPropagation();
+    clone.classList.toggle("minimized");
+    saveCurrentBoard();
+  });
 
   clone.addEventListener("dragstart", e => {
     if (e.target.closest("canvas, button, .assigned, input")) {
@@ -213,6 +235,9 @@ function createNoteElement(day, noteData) {
     createNoteElement(day, copy);
     saveData();
   });
+
+  setupChecklists(clone, noteData);
+  updateCompactView(clone);
 
   document.querySelector(`[data-day="${day}"] .dropzone`).appendChild(clone);
 }
@@ -301,6 +326,89 @@ function readAssigned(container) {
   }));
 }
 
+function setupChecklists(noteEl, noteData) {
+  const lists = ["bauleitung", "prozess"];
+
+  lists.forEach(type => {
+    if (!noteData.checklists) noteData.checklists = {};
+    if (!noteData.checklists[type]) noteData.checklists[type] = Array(15).fill(false);
+
+    const container = noteEl.querySelector(`[data-list="${type}"]`);
+    container.innerHTML = "";
+
+    for (let i = 0; i < 15; i++) {
+      const label = document.createElement("label");
+      label.innerHTML = `
+        <input type="checkbox" data-checklist="${type}" data-index="${i}">
+        Punkt ${i + 1} – Textblocker
+      `;
+
+      const input = label.querySelector("input");
+      input.checked = !!noteData.checklists[type][i];
+
+      input.addEventListener("change", () => {
+        updateTrafficLights(noteEl);
+        saveCurrentBoard();
+      });
+
+      container.appendChild(label);
+    }
+  });
+
+  noteEl.querySelectorAll("[data-list-button]").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.stopPropagation();
+
+      const type = btn.dataset.listButton;
+      noteEl.classList.remove("minimized");
+
+      noteEl.querySelectorAll(".checklist-panel").forEach(panel => {
+        panel.classList.add("hidden");
+      });
+
+      const panel = noteEl.querySelector(`[data-list-panel="${type}"]`);
+      panel.classList.toggle("hidden");
+    });
+  });
+
+  updateTrafficLights(noteEl);
+}
+
+function updateTrafficLights(noteEl) {
+  ["bauleitung", "prozess"].forEach(type => {
+    const boxes = [...noteEl.querySelectorAll(`[data-checklist="${type}"]`)];
+    const checked = boxes.filter(box => box.checked).length;
+
+    noteEl.querySelectorAll(`[data-list-button="${type}"]`).forEach(btn => {
+      btn.classList.remove("traffic-red", "traffic-orange", "traffic-green");
+
+      if (checked === 0) {
+        btn.classList.add("traffic-red");
+      } else if (checked === boxes.length) {
+        btn.classList.add("traffic-green");
+      } else {
+        btn.classList.add("traffic-orange");
+      }
+    });
+  });
+}
+
+function updateCompactView(noteEl) {
+  const bvCanvas = noteEl.querySelector('canvas[data-field="bv"]');
+  const compactBv = noteEl.querySelector(".compact-bv");
+
+  if (compactBv) {
+    compactBv.textContent = "Bauvorhaben";
+  }
+
+  const source = noteEl.querySelector(".assigned");
+  const target = noteEl.querySelector(".compact-assigned");
+
+  if (source && target) {
+    target.innerHTML = source.innerHTML;
+  }
+}
+
 function collectNote(noteEl) {
   const writings = {};
   noteEl.querySelectorAll("canvas[data-field]").forEach(canvas => {
@@ -312,11 +420,26 @@ function collectNote(noteEl) {
     checks[input.dataset.check] = input.checked;
   });
 
+  const checklists = {
+    bauleitung: [],
+    prozess: []
+  };
+
+  noteEl.querySelectorAll('[data-checklist="bauleitung"]').forEach(box => {
+    checklists.bauleitung[Number(box.dataset.index)] = box.checked;
+  });
+
+  noteEl.querySelectorAll('[data-checklist="prozess"]').forEach(box => {
+    checklists.prozess[Number(box.dataset.index)] = box.checked;
+  });
+
   return {
     id: noteEl.dataset.noteId,
     writings,
     checks,
-    assigned: readAssigned(noteEl.querySelector(".assigned"))
+    assigned: readAssigned(noteEl.querySelector(".assigned")),
+    minimized: noteEl.classList.contains("minimized"),
+    checklists
   };
 }
 

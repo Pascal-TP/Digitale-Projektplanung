@@ -1,4 +1,6 @@
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -19,10 +21,21 @@ body {
   border-bottom: 5px solid #4d8fd6;
 }
 
-.topbar h1 { margin: 0; font-size: 30px; }
-.topbar p { margin: 4px 0 0; opacity: .8; }
+.topbar h1 {
+  margin: 0;
+  font-size: 30px;
+}
 
-.week-controls { display: flex; gap: 14px; align-items: center; }
+.topbar p {
+  margin: 4px 0 0;
+  opacity: .8;
+}
+
+.week-controls {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
 
 button {
   border: 0;
@@ -33,10 +46,12 @@ button {
   background: #ffffff;
   color: #17202a;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
 }
 
-button:hover { transform: translateY(-1px); }
+button:hover {
+  transform: translateY(-1px);
+}
 
 .week-badge {
   font-size: 24px;
@@ -66,7 +81,9 @@ main {
   color: white;
 }
 
-.toolbox .danger { background: #c0392b; }
+.toolbox .danger {
+  background: #c0392b;
+}
 
 .toolbox h2 {
   margin: 24px 0 10px;
@@ -75,7 +92,11 @@ main {
   padding-top: 14px;
 }
 
-.magnet-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.magnet-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 
 .magnet {
   user-select: none;
@@ -85,7 +106,7 @@ main {
   border: 2px solid #d4a72c;
   font-weight: 800;
   cursor: grab;
-  box-shadow: 0 2px 5px rgba(0,0,0,.18);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .18);
 }
 
 .magnet.vehicle {
@@ -144,14 +165,16 @@ main {
   border: 2px solid #222;
   border-radius: 6px;
   padding: 44px 14px 12px;
-  box-shadow: 0 7px 16px rgba(0,0,0,.22);
+  box-shadow: 0 7px 16px rgba(0, 0, 0, .22);
   cursor: grab;
   width: 950px;
   max-width: 950px;
   min-height: 330px;
 }
 
-.note:active { cursor: grabbing; }
+.note:active {
+  cursor: grabbing;
+}
 
 .note-actions {
   position: absolute;
@@ -237,7 +260,7 @@ input[type="checkbox"] {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  background: rgba(255,255,255,.65);
+  background: rgba(255, 255, 255, .65);
 }
 
 .assigned:empty::before {
@@ -266,6 +289,110 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 1200px) {
-  body { overflow: auto; }
-  main { height: auto; }
+  body {
+    overflow: auto;
+  }
+
+  main {
+    height: auto;
+  }
+}
+
+.note.minimized {
+  width: 320px;
+  max-width: 320px;
+  min-height: auto;
+  padding: 12px;
+}
+
+.note.minimized .note-full,
+.note.minimized .canvas-tools,
+.note.minimized .checklist-panel {
+  display: none;
+}
+
+.note.minimized .note-actions {
+  top: 8px;
+  right: 8px;
+}
+
+.note-compact {
+  display: none;
+}
+
+.note.minimized .note-compact {
+  display: block;
+}
+
+.compact-title {
+  font-weight: 900;
+  font-size: 17px;
+  margin-bottom: 10px;
+  padding-right: 70px;
+}
+
+.compact-lights {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.traffic-btn {
+  padding: 8px 10px;
+  font-size: 13px;
+  color: white;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.traffic-red {
+  background: #c0392b;
+}
+
+.traffic-orange {
+  background: #f39c12;
+}
+
+.traffic-green {
+  background: #27ae60;
+}
+
+.compact-assigned {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.compact-assigned .magnet {
+  font-size: 12px;
+  padding: 6px 9px;
+}
+
+.checklist-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 2px solid #222;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.checklist-panel.hidden {
+  display: none;
+}
+
+.checklist-panel h3 {
+  margin: 0 0 10px;
+}
+
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.checklist label {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: normal;
 }
