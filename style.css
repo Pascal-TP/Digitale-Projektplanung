@@ -93,7 +93,7 @@ body.menu-collapsed .toolbox {
 }
 
 .menu-toggle {
-  writing-mode: vertical-lr;
+  writing-mode: vertical-rl;
   background: #1f2933;
   color: white;
   border-radius: 0;
@@ -104,7 +104,7 @@ body.menu-collapsed .toolbox {
   z-index: 20;
   font-size: 16px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
 }
 
 .toolbox {
