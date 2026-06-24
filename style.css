@@ -65,6 +65,29 @@ main {
   display: grid;
   grid-template-columns: 340px 1fr;
   height: calc(100vh - 92px);
+  transition: grid-template-columns .25s ease;
+  position: relative;
+}
+
+body.menu-collapsed main {
+  grid-template-columns: 44px 1fr;
+}
+
+body.menu-collapsed .toolbox {
+  display: none;
+}
+
+.menu-toggle {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  background: #1f2933;
+  color: white;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+  width: 44px;
+  padding: 10px 4px;
+  z-index: 20;
 }
 
 .toolbox {
@@ -578,7 +601,7 @@ input[type="checkbox"] {
 .week-drop {
   min-width: 150px;
   padding: 10px 12px;
-  border: 2px dashed rgba(255,255,255,.65);
+  border: 2px dashed rgba(255, 255, 255, .65);
   border-radius: 14px;
   color: white;
   font-size: 13px;

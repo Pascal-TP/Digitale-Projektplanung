@@ -26,6 +26,16 @@ const weekNumber = document.getElementById("weekNumber");
 const template = document.getElementById("noteTemplate");
 const columns = [...document.querySelectorAll(".day-column")];
 
+const menuToggle = document.getElementById("menuToggle");
+
+menuToggle.addEventListener("click", () => {
+  document.body.classList.toggle("menu-collapsed");
+
+  menuToggle.textContent = document.body.classList.contains("menu-collapsed")
+    ? "☰ Menü öffnen"
+    : "☰ Menü schließen";
+});
+
 document.getElementById("prevWeek").addEventListener("click", () => {
   saveCurrentBoard();
   currentWeek = currentWeek === 1 ? 52 : currentWeek - 1;
