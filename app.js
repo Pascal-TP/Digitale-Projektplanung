@@ -1,4 +1,5 @@
 const DAYS = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"];
+const year = new Date().getFullYear();
 const STORAGE_KEY = "digitaleMagnetwandDemo_v2";
 
 let currentWeek = 1;
@@ -100,6 +101,7 @@ function renderWeek() {
     (week[day] || []).forEach(noteData => createNoteElement(day, noteData));
   });
 
+  updateWeekDates();
   saveData();
 }
 
@@ -546,4 +548,41 @@ renderWeek();
 
 if (Object.values(getWeek()).every(arr => arr.length === 0)) {
   addSampleNote();
+}
+
+function updateWeekDates() {
+
+  const monday = getMondayOfISOWeek(currentWeek, year);
+
+  document.querySelectorAll(".day-column").forEach((column, index) => {
+
+    const date = new Date(monday);
+
+    date.setDate(monday.getDate() + index);
+
+    const txt =
+      String(date.getDate()).padStart(2, "0") + "." +
+      String(date.getMonth() + 1).padStart(2, "0") + ".";
+
+    column.querySelector(".day-date").textContent = txt;
+
+  });
+
+}
+
+function getMondayOfISOWeek(week, year) {
+
+  const simple = new Date(year, 0, 1 + (week - 1) * 7);
+
+  const dow = simple.getDay();
+
+  const monday = new Date(simple);
+
+  if (dow <= 4)
+    monday.setDate(simple.getDate() - simple.getDay() + 1);
+  else
+    monday.setDate(simple.getDate() + 8 - simple.getDay());
+
+  return monday;
+
 }

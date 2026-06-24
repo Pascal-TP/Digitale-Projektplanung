@@ -151,6 +151,14 @@ main {
   color: #1f2933;
 }
 
+.day-date{
+    display:block;
+    margin-top:4px;
+    font-size:16px;
+    font-weight:500;
+    color:#5c6773;
+}
+
 .dropzone {
   flex: 1;
   display: flex;
