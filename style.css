@@ -839,3 +839,49 @@ body.view-only #logoutButton {
   color: #6b7280;
   font-weight: 600;
 }
+
+.help-box {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.help-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #4d8fd6;
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  box-shadow: none;
+  cursor: help;
+}
+
+.help-tooltip {
+  position: absolute;
+  left: 52px;
+  top: 0;
+
+  width: 340px;
+
+  background: white;
+  border: 1px solid #d6dde7;
+  border-radius: 14px;
+
+  padding: 16px;
+
+  font-size: 14px;
+  line-height: 1.5;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: .18s;
+  z-index: 500;
+}
+
+.help-box:hover .help-tooltip {
+  opacity: 1;
+}
