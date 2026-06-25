@@ -10,14 +10,14 @@
 
 <body>
   <div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <h2>Digitale Projektplanung</h2>
-    <input id="loginEmail" type="email" placeholder="E-Mail" />
-    <input id="loginPassword" type="password" placeholder="Passwort" />
-    <button id="loginButton">Anmelden</button>
-    <p id="loginError"></p>
+    <div class="login-box">
+      <h2>Digitale Projektplanung</h2>
+      <input id="loginEmail" type="email" placeholder="E-Mail" />
+      <input id="loginPassword" type="password" placeholder="Passwort" />
+      <button id="loginButton">Anmelden</button>
+      <p id="loginError"></p>
+    </div>
   </div>
-</div>
 
   <header class="topbar">
     <div>
@@ -67,6 +67,16 @@
       <div id="trashBin" class="trash-bin">
         🗑️
         <span>Hier ablegen zum Löschen von Monteuren und Fahrzeugen.</span>
+      </div>
+
+      <button id="historyButton" class="history-button">🕘 Historie anzeigen</button>
+
+      <div id="historyPanel" class="history-panel hidden">
+        <div class="history-head">
+          <h3>Historie</h3>
+          <button id="historyClose">×</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
       </div>
     </aside>
 
@@ -119,7 +129,7 @@
   <template id="noteTemplate">
     <article class="note" draggable="true">
       <div class="note-compact">
-        <div class="compact-title">BV: <span class="compact-bv">-</span></div>
+        <div class="compact-title">#<span class="note-number">????</span> · BV: <span class="compact-bv">-</span></div>
 
         <div class="compact-lights">
           <button class="traffic-btn traffic-red" data-list-button="bauleitung">Bauleitung</button>
@@ -138,11 +148,12 @@
       </div>
 
       <div class="note-full">
+        <div class="note-number-full">Zettel #<span class="note-number">????</span></div>
         <div class="note-row row-1">
           <div class="field wide"><span>Auftraggeber:</span>
             <div class="hybrid-field" style="width:250px;height:34px;">
               <canvas data-field="auftraggeber" width="250" height="34"></canvas>
-              <input data-text-field="autraggeber" />
+              <input data-text-field="auftraggeber" />
             </div>
           </div>
           <div class="field wide"><span>BV:</span>

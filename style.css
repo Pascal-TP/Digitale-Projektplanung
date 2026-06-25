@@ -650,7 +650,7 @@ input[type="checkbox"] {
   background: white;
   padding: 28px;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.22);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .22);
 }
 
 .login-box input,
@@ -688,4 +688,68 @@ body.view-only #prevWeek,
 body.view-only #nextWeek,
 body.view-only #logoutButton {
   pointer-events: auto;
+}
+
+.history-button {
+  margin-top: 14px;
+  width: 100%;
+  background: #1f2933 !important;
+  color: white !important;
+}
+
+.history-panel {
+  margin-top: 14px;
+  background: white;
+  border: 2px solid #1f2933;
+  border-radius: 16px;
+  padding: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .18);
+}
+
+.history-panel.hidden {
+  display: none;
+}
+
+.history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-head h3 {
+  margin: 0;
+}
+
+.history-head button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: #c0392b;
+  color: white;
+}
+
+.history-item {
+  border-bottom: 1px solid #d9dde3;
+  padding: 9px 0;
+  font-size: 13px;
+}
+
+.history-item strong {
+  display: block;
+}
+
+.history-meta {
+  color: #6c757d;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.note-number-full {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  font-weight: 900;
+  color: #1f2933;
 }

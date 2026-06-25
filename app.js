@@ -4,7 +4,14 @@ import {
   doc,
   getDoc,
   setDoc,
-  onSnapshot
+  onSnapshot,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 import {
@@ -31,6 +38,8 @@ let currentUserRole = "view";
 
 const planningRef = doc(db, "planning", "main");
 const peopleRef = doc(db, "people", "main");
+const historyRef = collection(db, "history");
+const countersRef = doc(db, "meta", "counters");
 
 function userRef(uid) {
   return doc(db, "users", uid);
@@ -132,11 +141,91 @@ columns.forEach(column => {
     column.querySelector(".dropzone").appendChild(note);
     dragNoteId = null;
     saveCurrentBoard();
+
+    logHistory("Zettel verschoben", `Zettel nach ${column.dataset.day}, KW ${currentWeek}`);
   });
 });
 
 function canEdit() {
   return currentUserRole === "full";
+}
+
+async function reserveNoteNumber() {
+  return await runTransaction(db, async transaction => {
+    const snap = await transaction.get(countersRef);
+
+    const nextNumber =
+      snap.exists() && typeof snap.data().nextNoteNumber === "number"
+        ? snap.data().nextNoteNumber
+        : 1;
+
+    transaction.set(countersRef, {
+      nextNoteNumber: nextNumber + 1
+    }, { merge: true });
+
+    return nextNumber;
+  });
+}
+
+async function ensureNoteNumbers() {
+  let changed = false;
+
+  for (const weekNo of Object.keys(data.weeks || {})) {
+    const week = data.weeks[weekNo];
+
+    for (const day of DAYS) {
+      for (const note of week[day] || []) {
+        if (!note.noteNumber) {
+          note.noteNumber = await reserveNoteNumber();
+          changed = true;
+        }
+      }
+    }
+  }
+
+  if (changed) {
+    await saveData();
+  }
+}
+
+function formatNoteNumber(noteDataOrNumber) {
+  const number = typeof noteDataOrNumber === "number"
+    ? noteDataOrNumber
+    : noteDataOrNumber.noteNumber;
+
+  return number ? String(number).padStart(4, "0") : "????";
+}
+
+const FIELD_LABELS = {
+  auftraggeber: "Auftraggeber",
+  bv: "BV",
+  p: "P-",
+  ort: "Ort",
+  bautraeger: "Bauträger",
+  etage: "Etage",
+  flaeche: "Fläche",
+  hk: "HK",
+  rohr: "Rohr",
+  termin: "Termin",
+  estrich: "Estrich",
+  tw: "TW",
+  sonstiges: "Sonstiges",
+  summe: "Summe Monteure",
+  mz: "MZ",
+  cl: "PP",
+  as: "AS",
+  materialliste: "Materialliste",
+  angefahren: "Angefahren",
+  nurrohr: "Nur Rohr",
+  systemrohr: "System + Rohr"
+};
+
+function getNoteLabel(noteEl) {
+  const number = noteEl.dataset.noteNumber || "????";
+  const bvInput = noteEl.querySelector('[data-text-field="bv"]');
+  const bv = bvInput && bvInput.value.trim() ? bvInput.value.trim() : "";
+
+  return bv ? `Zettel #${number} – ${bv}` : `Zettel #${number}`;
 }
 
 function loadData() {
@@ -186,9 +275,10 @@ function renderWeek(shouldSave = true) {
   }
 }
 
-function addNote(day, noteData = null) {
+async function addNote(day, noteData = null) {
   const empty = {
     id: crypto.randomUUID(),
+    noteNumber: await reserveNoteNumber(),
     writings: {},
     texts: {},
     checks: {},
@@ -199,15 +289,29 @@ function addNote(day, noteData = null) {
       prozess: Array(15).fill(false)
     }
   };
+
   const finalData = noteData || empty;
+
+  if (!finalData.noteNumber) {
+    finalData.noteNumber = await reserveNoteNumber();
+  }
+
   getWeek()[day].push(finalData);
   createNoteElement(day, finalData);
   saveData();
+
+  logHistory("Zettel erstellt", `Zettel #${formatNoteNumber(finalData)} wurde in KW ${currentWeek}, ${day} erstellt`);
 }
 
 function createNoteElement(day, noteData) {
   const clone = template.content.firstElementChild.cloneNode(true);
   clone.dataset.noteId = noteData.id;
+
+  clone.dataset.noteNumber = formatNoteNumber(noteData);
+
+  clone.querySelectorAll(".note-number").forEach(el => {
+    el.textContent = formatNoteNumber(noteData);
+  });
 
   if (noteData.minimized !== false) {
     clone.classList.add("minimized");
@@ -238,6 +342,12 @@ function createNoteElement(day, noteData) {
       clone.classList.add("minimized");
     }
 
+    clone.querySelector(".delete").addEventListener("click", () => {
+      clone.remove();
+      saveCurrentBoard();
+      logHistory("Zettel gelöscht", `Zettel in KW ${currentWeek} gelöscht`);
+    });
+
     saveCurrentBoard();
   });
 
@@ -257,7 +367,14 @@ function createNoteElement(day, noteData) {
   clone.querySelectorAll("[data-check]").forEach(input => {
     const key = input.dataset.check;
     input.checked = !!(noteData.checks && noteData.checks[key]);
-    input.addEventListener("change", saveCurrentBoard);
+    input.addEventListener("change", () => {
+      saveCurrentBoard();
+
+      logHistory(
+        "Statusfeld geändert",
+        `${getNoteLabel(clone)} · ${FIELD_LABELS[key] || key}: ${input.checked ? "aktiviert" : "deaktiviert"}`
+      );
+    });
   });
 
   clone.querySelectorAll("canvas[data-field]").forEach(canvas => {
@@ -268,6 +385,26 @@ function createNoteElement(day, noteData) {
   clone.querySelectorAll("[data-text-field]").forEach(input => {
     const key = input.dataset.textField;
     input.value = noteData.texts ? noteData.texts[key] || "" : "";
+
+    input.dataset.oldValue = input.value;
+
+    input.addEventListener("focus", () => {
+      input.dataset.oldValue = input.value;
+    });
+
+    input.addEventListener("blur", () => {
+      const oldValue = input.dataset.oldValue || "";
+      const newValue = input.value || "";
+
+      if (oldValue !== newValue) {
+        logHistory(
+          "Eingabefeld geändert",
+          `${getNoteLabel(clone)} · ${FIELD_LABELS[key] || key}: "${oldValue}" → "${newValue}"`
+        );
+
+        input.dataset.oldValue = newValue;
+      }
+    });
 
     input.addEventListener("input", () => {
       updateCompactView(clone);
@@ -311,6 +448,8 @@ function createNoteElement(day, noteData) {
       renderAssigned(assigned, current);
       updateCompactView(clone);
       saveCurrentBoard();
+
+      logHistory("Zuordnung geändert", `${item.text} wurde einem Zettel zugeordnet`);
     }
   });
   renderAssigned(assigned, noteData.assigned || []);
@@ -321,17 +460,26 @@ function createNoteElement(day, noteData) {
   });
 
   clone.querySelector(".delete").addEventListener("click", () => {
+    const label = getNoteLabel(clone);
+
     clone.remove();
     saveCurrentBoard();
+
+    logHistory("Zettel gelöscht", `${label} wurde gelöscht`);
   });
 
-  clone.querySelector(".duplicate").addEventListener("click", () => {
+  clone.querySelector(".duplicate").addEventListener("click", async () => {
     saveCurrentBoard();
+
     const copy = collectNote(clone);
     copy.id = crypto.randomUUID();
+    copy.noteNumber = await reserveNoteNumber();
+
     getWeek()[day].push(copy);
     createNoteElement(day, copy);
     saveData();
+
+    logHistory("Zettel kopiert", `${getNoteLabel(clone)} wurde als Zettel #${formatNoteNumber(copy)} kopiert`);
   });
 
   setupChecklists(clone, noteData);
@@ -389,6 +537,16 @@ function setupWritingCanvas(canvas, imageData) {
     drawing = false;
     last = null;
     saveCurrentBoard();
+
+    const note = canvas.closest(".note");
+    const field = canvas.dataset.field;
+
+    if (note) {
+      logHistory(
+        "Handschrift geändert",
+        `${getNoteLabel(note)} · ${FIELD_LABELS[field] || field}`
+      );
+    }
   });
 
   canvas.addEventListener("pointercancel", () => {
@@ -399,6 +557,16 @@ function setupWritingCanvas(canvas, imageData) {
   canvas.addEventListener("dblclick", () => {
     clearCanvas(canvas);
     saveCurrentBoard();
+
+    const note = canvas.closest(".note");
+    const field = canvas.dataset.field;
+
+    if (note) {
+      logHistory(
+        "Handschrift gelöscht",
+        `${getNoteLabel(note)} · ${FIELD_LABELS[field] || field}`
+      );
+    }
   });
 }
 
@@ -457,6 +625,14 @@ function setupChecklists(noteEl, noteData) {
       input.addEventListener("change", () => {
         updateTrafficLights(noteEl);
         saveCurrentBoard();
+
+        const listName = type === "bauleitung" ? "Bauleitung" : "Prozess";
+        const status = input.checked ? "erledigt" : "offen";
+
+        logHistory(
+          "Checkliste geändert",
+          `${getNoteLabel(noteEl)} · ${listName} · Punkt ${i + 1}: ${status}`
+        );
       });
 
       container.appendChild(label);
@@ -551,6 +727,7 @@ function collectNote(noteEl) {
 
   return {
     id: noteEl.dataset.noteId,
+    noteNumber: Number(noteEl.dataset.noteNumber),
     writings,
     texts,
     checks,
@@ -624,11 +801,13 @@ onAuthStateChanged(auth, async user => {
 async function startApp() {
   await loadDataFromFirestore();
   await loadPeople();
+  await ensureNoteNumbers();
 
   renderSlotLists();
   renderWeek(false);
 
   subscribeToRealtimeUpdates();
+  subscribeToHistory();
 }
 
 function updateWeekDates() {
@@ -821,6 +1000,8 @@ function setupWeekDrop(elementId, direction) {
     saveData();
     dragNoteId = null;
 
+    logHistory("Zettel in andere KW verschoben", `Nach KW ${targetWeekNumber}`);
+
     renderWeek();
   });
 }
@@ -844,5 +1025,52 @@ function subscribeToRealtimeUpdates() {
     if (Array.isArray(saved.vehicles)) vehicles = saved.vehicles;
 
     renderSlotLists();
+  });
+}
+
+document.getElementById("historyButton").addEventListener("click", () => {
+  document.getElementById("historyPanel").classList.toggle("hidden");
+});
+
+document.getElementById("historyClose").addEventListener("click", () => {
+  document.getElementById("historyPanel").classList.add("hidden");
+});
+
+async function logHistory(action, details = "") {
+  if (!canEdit()) return;
+
+  await addDoc(historyRef, {
+    action,
+    details,
+    week: currentWeek,
+    userEmail: auth.currentUser ? auth.currentUser.email : "",
+    createdAt: serverTimestamp()
+  });
+}
+
+function subscribeToHistory() {
+  const q = query(historyRef, orderBy("createdAt", "desc"), limit(50));
+
+  onSnapshot(q, snapshot => {
+    const list = document.getElementById("historyList");
+    list.innerHTML = "";
+
+    snapshot.forEach(docSnap => {
+      const item = docSnap.data();
+
+      const date = item.createdAt && item.createdAt.toDate
+        ? item.createdAt.toDate().toLocaleString("de-DE")
+        : "";
+
+      const div = document.createElement("div");
+      div.className = "history-item";
+      div.innerHTML = `
+        <strong>${item.action}</strong>
+        <div>${item.details || ""}</div>
+        <div class="history-meta">${date} · ${item.userEmail || "Unbekannt"} · KW ${item.week || "-"}</div>
+      `;
+
+      list.appendChild(div);
+    });
   });
 }
