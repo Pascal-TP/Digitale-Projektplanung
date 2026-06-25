@@ -797,3 +797,45 @@ body.view-only #logoutButton {
   font-weight: 900;
   color: #1f2933;
 }
+
+.online-box {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+
+.online-box h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #1f2933;
+}
+
+.online-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  font-size: 13px;
+  font-weight: 700;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.online-user:last-child {
+  border-bottom: none;
+}
+
+.online-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #22c55e;
+  flex: 0 0 auto;
+}
+
+.online-meta {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+}

@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  deleteDoc,
   onSnapshot,
   collection,
   addDoc,
@@ -40,6 +41,7 @@ const planningRef = doc(db, "planning", "main");
 const peopleRef = doc(db, "people", "main");
 const historyRef = collection(db, "history");
 const countersRef = doc(db, "meta", "counters");
+const presenceRef = collection(db, "presence");
 
 function userRef(uid) {
   return doc(db, "users", uid);
@@ -58,6 +60,8 @@ let isRemoteUpdate = false;
 let unsubscribePlanning = null;
 let unsubscribePeople = null;
 let lastOpenUiState = null;
+let presenceInterval = null;
+let unsubscribePresence = null;
 
 const PEOPLE_STORAGE_KEY = "digitaleMagnetwand_people_v1";
 
@@ -89,12 +93,14 @@ document.getElementById("prevWeek").addEventListener("click", () => {
   saveCurrentBoard();
   currentWeek = currentWeek === 1 ? 52 : currentWeek - 1;
   renderWeek();
+  updatePresence();
 });
 
 document.getElementById("nextWeek").addEventListener("click", () => {
   saveCurrentBoard();
   currentWeek = currentWeek === 52 ? 1 : currentWeek + 1;
   renderWeek();
+  updatePresence();
 });
 
 document.getElementById("addNote").addEventListener("click", () => addNote("Montag"));
@@ -389,12 +395,12 @@ function createNoteElement(day, noteData) {
 
   const modeButton = clone.querySelector(".mode-toggle");
 
- if (noteData.keyboardMode !== false) {
-  clone.classList.add("keyboard-mode");
-  modeButton.textContent = "✏️ Stift";
-} else {
-  modeButton.textContent = "⌨ Tastatur";
-}
+  if (noteData.keyboardMode !== false) {
+    clone.classList.add("keyboard-mode");
+    modeButton.textContent = "✏️ Stift";
+  } else {
+    modeButton.textContent = "⌨ Tastatur";
+  }
 
   if (noteData.eraserMode) {
     clone.classList.add("eraser-mode");
@@ -497,8 +503,8 @@ function createNoteElement(day, noteData) {
     clone.classList.remove("eraser-mode");
 
     modeButton.textContent = clone.classList.contains("keyboard-mode")
-    ? "✏️ Stift"
-    : "⌨ Tastatur";
+      ? "✏️ Stift"
+      : "⌨ Tastatur";
 
     const eraserButton = clone.querySelector(".eraser-toggle");
     eraserButton.textContent = "🧽 Radierer";
@@ -874,7 +880,8 @@ document.getElementById("loginButton").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("logoutButton").addEventListener("click", () => {
+document.getElementById("logoutButton").addEventListener("click", async () => {
+  await removePresence();
   signOut(auth);
 });
 
@@ -906,6 +913,9 @@ async function startApp() {
 
   subscribeToRealtimeUpdates();
   subscribeToHistory();
+
+  startPresence();
+  subscribeToPresence();
 }
 
 function updateWeekDates() {
@@ -1187,3 +1197,83 @@ function getCurrentISOWeek() {
 
   return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
 }
+
+async function updatePresence() {
+  if (!auth.currentUser) return;
+
+  await setDoc(doc(db, "presence", auth.currentUser.uid), {
+    email: auth.currentUser.email || "Unbekannt",
+    week: currentWeek,
+    role: currentUserRole,
+    lastSeenMs: Date.now(),
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+function startPresence() {
+  updatePresence();
+
+  if (presenceInterval) clearInterval(presenceInterval);
+
+  presenceInterval = setInterval(() => {
+    updatePresence();
+  }, 30000);
+}
+
+async function removePresence() {
+  if (!auth.currentUser) return;
+
+  try {
+    await deleteDoc(doc(db, "presence", auth.currentUser.uid));
+  } catch {
+    // Beim Schließen/Logout nicht kritisch
+  }
+}
+
+function subscribeToPresence() {
+  if (unsubscribePresence) unsubscribePresence();
+
+  unsubscribePresence = onSnapshot(presenceRef, snapshot => {
+    const container = document.getElementById("onlineUsers");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const now = Date.now();
+    const activeUsers = [];
+
+    snapshot.forEach(docSnap => {
+      const user = docSnap.data();
+
+      if (!user.lastSeenMs) return;
+      if (now - user.lastSeenMs > 120000) return;
+
+      activeUsers.push(user);
+    });
+
+    activeUsers
+      .sort((a, b) => (a.email || "").localeCompare(b.email || "", "de"))
+      .forEach(user => {
+        const div = document.createElement("div");
+        div.className = "online-user";
+
+        div.innerHTML = `
+          <span class="online-dot"></span>
+          <div>
+            <div>${user.email || "Unbekannt"}</div>
+            <div class="online-meta">KW ${user.week || "-"} · ${user.role === "full" ? "Vollzugriff" : "Ansicht"}</div>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+
+    if (activeUsers.length === 0) {
+      container.innerHTML = `<div class="online-meta">Niemand online</div>`;
+    }
+  });
+}
+
+window.addEventListener("beforeunload", () => {
+  removePresence();
+});
