@@ -274,7 +274,7 @@ function restoreOpenUiState(state) {
 
   const modeButton = note.querySelector(".mode-toggle");
   if (modeButton) {
-    modeButton.textContent = state.keyboardMode ? "⌨ Tastatur" : "✎ Stift";
+    modeButton.textContent = state.keyboardMode ? "✏️ Stift" : "⌨ Tastatur";
   }
 
   const eraserButton = note.querySelector(".eraser-toggle");
