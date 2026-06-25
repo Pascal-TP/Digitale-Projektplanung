@@ -342,12 +342,6 @@ function createNoteElement(day, noteData) {
       clone.classList.add("minimized");
     }
 
-    clone.querySelector(".delete").addEventListener("click", () => {
-      clone.remove();
-      saveCurrentBoard();
-      logHistory("Zettel gelöscht", `Zettel in KW ${currentWeek} gelöscht`);
-    });
-
     saveCurrentBoard();
   });
 
