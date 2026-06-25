@@ -237,7 +237,9 @@ function captureOpenUiState() {
 
   return {
     noteId: openNote.dataset.noteId,
-    panelType: openPanel ? openPanel.dataset.listPanel : null
+    panelType: openPanel ? openPanel.dataset.listPanel : null,
+    keyboardMode: openNote.classList.contains("keyboard-mode"),
+    eraserMode: openNote.classList.contains("eraser-mode")
   };
 }
 
@@ -257,6 +259,25 @@ function restoreOpenUiState(state) {
     const panel = note.querySelector(`[data-list-panel="${state.panelType}"]`);
     if (panel) {
       panel.classList.remove("hidden");
+    }
+  }
+  // Tastaturmodus wiederherstellen
+  if (state.keyboardMode) {
+    note.classList.add("keyboard-mode");
+
+    const modeButton = note.querySelector(".mode-toggle");
+    if (modeButton) {
+      modeButton.textContent = "⌨ Tastatur";
+    }
+  }
+
+  // Radiermodus wiederherstellen
+  if (state.eraserMode) {
+    note.classList.add("eraser-mode");
+
+    const eraserButton = note.querySelector(".eraser-toggle");
+    if (eraserButton) {
+      eraserButton.textContent = "🧽 Radierer";
     }
   }
 }
