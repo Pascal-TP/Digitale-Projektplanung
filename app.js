@@ -234,12 +234,21 @@ function captureOpenUiState() {
   if (!openNote) return null;
 
   const openPanel = openNote.querySelector(".checklist-panel:not(.hidden)");
+  const active = document.activeElement;
 
   return {
     noteId: openNote.dataset.noteId,
     panelType: openPanel ? openPanel.dataset.listPanel : null,
     keyboardMode: openNote.classList.contains("keyboard-mode"),
-    eraserMode: openNote.classList.contains("eraser-mode")
+    eraserMode: openNote.classList.contains("eraser-mode"),
+    activeTextField:
+      active && active.matches("[data-text-field]")
+        ? active.dataset.textField
+        : null,
+    cursorPosition:
+      active && active.matches("[data-text-field]")
+        ? active.selectionStart
+        : null
   };
 }
 
@@ -257,27 +266,32 @@ function restoreOpenUiState(state) {
 
   if (state.panelType) {
     const panel = note.querySelector(`[data-list-panel="${state.panelType}"]`);
-    if (panel) {
-      panel.classList.remove("hidden");
-    }
-  }
-  // Tastaturmodus wiederherstellen
-  if (state.keyboardMode) {
-    note.classList.add("keyboard-mode");
-
-    const modeButton = note.querySelector(".mode-toggle");
-    if (modeButton) {
-      modeButton.textContent = "⌨ Tastatur";
-    }
+    if (panel) panel.classList.remove("hidden");
   }
 
-  // Radiermodus wiederherstellen
-  if (state.eraserMode) {
-    note.classList.add("eraser-mode");
+  note.classList.toggle("keyboard-mode", !!state.keyboardMode);
+  note.classList.toggle("eraser-mode", !!state.eraserMode);
 
-    const eraserButton = note.querySelector(".eraser-toggle");
-    if (eraserButton) {
-      eraserButton.textContent = "🧽 Radierer";
+  const modeButton = note.querySelector(".mode-toggle");
+  if (modeButton) {
+    modeButton.textContent = state.keyboardMode ? "⌨ Tastatur" : "✎ Stift";
+  }
+
+  const eraserButton = note.querySelector(".eraser-toggle");
+  if (eraserButton) {
+    eraserButton.textContent = state.eraserMode ? "✎ Schreiben" : "🧽 Radierer";
+  }
+
+  if (state.activeTextField) {
+    const input = note.querySelector(`[data-text-field="${state.activeTextField}"]`);
+
+    if (input) {
+      setTimeout(() => {
+        input.focus();
+
+        const pos = state.cursorPosition ?? input.value.length;
+        input.setSelectionRange(pos, pos);
+      }, 0);
     }
   }
 }
