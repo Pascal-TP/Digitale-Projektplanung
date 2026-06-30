@@ -50,7 +50,12 @@ const peopleRefs = {
 };
 
 let peopleRef = peopleRefs[currentArea];
-const historyRef = collection(db, "history");
+const historyRefs = {
+  fbh: collection(db, "history", "fbh", "items"),
+  estrich: collection(db, "history", "estrich", "items")
+};
+
+let historyRef = historyRefs[currentArea];
 const countersRef = doc(db, "meta", "counters");
 const presenceRef = collection(db, "presence");
 
@@ -73,6 +78,7 @@ let unsubscribePeople = null;
 let lastOpenUiState = null;
 let presenceInterval = null;
 let unsubscribePresence = null;
+let unsubscribeHistory = null;
 
 const PEOPLE_STORAGE_KEY = "digitaleMagnetwand_people_v1";
 
@@ -1194,7 +1200,7 @@ async function logHistory(action, details = "") {
 function subscribeToHistory() {
   const q = query(historyRef, orderBy("createdAt", "desc"), limit(50));
 
-  onSnapshot(q, snapshot => {
+  unsubscribeHistory = onSnapshot(q, snapshot => {
     const list = document.getElementById("historyList");
     list.innerHTML = "";
 
@@ -1515,6 +1521,7 @@ async function switchArea(area) {
   currentArea = area;
   planningRef = planningRefs[currentArea];
   peopleRef = peopleRefs[currentArea];
+  historyRef = historyRefs[currentArea];
 
   document.getElementById("areaFbh").classList.toggle("active", currentArea === "fbh");
   document.getElementById("areaEstrich").classList.toggle("active", currentArea === "estrich");
@@ -1523,6 +1530,7 @@ async function switchArea(area) {
 
   if (unsubscribePlanning) unsubscribePlanning();
   if (unsubscribePeople) unsubscribePeople();
+  if (unsubscribeHistory) unsubscribeHistory();
 
   await loadDataFromFirestore();
   await loadPeople();
