@@ -582,6 +582,7 @@ input[type="checkbox"] {
   max-height: 58px;
   max-width: 260px;
   object-fit: contain;
+  pointer-events: none;
 }
 
 .trash-bin {
@@ -952,6 +953,9 @@ body.view-only #logoutButton {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-left: 20px;
+  margin-right: 20px;
+  z-index: 5;
 }
 
 .area-button {

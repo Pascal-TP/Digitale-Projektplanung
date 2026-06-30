@@ -44,7 +44,12 @@ const planningRefs = {
 
 let currentArea = "fbh";
 let planningRef = planningRefs[currentArea];
-const peopleRef = doc(db, "people", "main");
+const peopleRefs = {
+  fbh: doc(db, "people", "fbh"),
+  estrich: doc(db, "people", "estrich")
+};
+
+let peopleRef = peopleRefs[currentArea];
 const historyRef = collection(db, "history");
 const countersRef = doc(db, "meta", "counters");
 const presenceRef = collection(db, "presence");
@@ -1509,6 +1514,7 @@ async function switchArea(area) {
 
   currentArea = area;
   planningRef = planningRefs[currentArea];
+  peopleRef = peopleRefs[currentArea];
 
   document.getElementById("areaFbh").classList.toggle("active", currentArea === "fbh");
   document.getElementById("areaEstrich").classList.toggle("active", currentArea === "estrich");
@@ -1516,10 +1522,13 @@ async function switchArea(area) {
   data = { weeks: {} };
 
   if (unsubscribePlanning) unsubscribePlanning();
+  if (unsubscribePeople) unsubscribePeople();
 
   await loadDataFromFirestore();
+  await loadPeople();
   await ensureNoteNumbers();
 
+  renderSlotLists();
   renderWeek(false);
   subscribeToRealtimeUpdates();
   updatePresence();
