@@ -22,6 +22,18 @@ import {
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+  deleteObject
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBCE0F_9qFQPl-qEck3RxnHrOZ7mi4p48c",
   authDomain: "digitale-projektplanung.firebaseapp.com",
@@ -35,6 +47,21 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
+
+const blazeConfig = {
+  apiKey: "AIzaSyCcHI5sGR7sFwrWRpo2uQ3Plm0HpTvqr30",
+  authDomain: "kalkpro-4cc29.firebaseapp.com",
+  projectId: "kalkpro-4cc29",
+  storageBucket: "kalkpro-4cc29.firebasestorage.app",
+  messagingSenderId: "185447466021",
+  appId: "1:185447466021:web:e0d0720fae971b4ab52bcc",
+  measurementId: "G-V4SF92V16K"
+};
+
+const blazeApp = initializeApp(blazeConfig, "blazeApp");
+const blazeStorage = getStorage(blazeApp);
+const blazeFunctions = getFunctions(blazeApp, "europe-west1");
+
 let currentUserRole = "view";
 
 const planningRefs = {
@@ -438,6 +465,7 @@ async function addNote(day, noteData = null) {
     empty.texts.startdate = formatDateInput(start);
     empty.texts.enddate = formatDateInput(start);
     empty.texts.color = "";
+    empty.files = [];
   }
 
   const finalData = noteData || empty;
@@ -711,6 +739,10 @@ function createNoteElement(day, noteData, options = {}) {
 
     logHistory("Zettel kopiert", `${getNoteLabel(clone)} wurde als Zettel #${formatNoteNumber(copy)} kopiert`);
   });
+
+  if (currentArea === "estrich") {
+    setupEstrichUploadAndMail(clone, noteData);
+  }
 
   setupChecklists(clone, noteData);
   updateCompactView(clone);
@@ -1002,8 +1034,204 @@ function collectNote(noteEl) {
       ? readAssigned(noteEl.querySelector(".absent-assigned"))
       : [],
     minimized: noteEl.classList.contains("minimized"),
-    checklists
+    checklists,
+    files: JSON.parse(noteEl.dataset.files || "[]"),
   };
+}
+
+function getNoteFiles(noteEl) {
+  return JSON.parse(noteEl.dataset.files || "[]");
+}
+
+function setNoteFiles(noteEl, files) {
+  noteEl.dataset.files = JSON.stringify(files);
+  renderEstrichFileList(noteEl);
+  saveCurrentBoard();
+}
+
+function getEstrichUploadKey(noteEl) {
+  const number = noteEl.dataset.noteNumber || "unknown";
+  return `estrich/zettel_${number}`.replace(/[^a-zA-Z0-9/_-]/g, "_");
+}
+
+function setupEstrichUploadAndMail(noteEl, noteData) {
+  setNoteFiles(noteEl, noteData.files || []);
+
+  const uploadButton = noteEl.querySelector(".upload-files");
+  const fileBox = noteEl.querySelector(".file-box");
+  const mailButton = noteEl.querySelector(".send-appointment");
+  const mailInput = noteEl.querySelector('[data-text-field="kundenmail"]');
+
+  if (uploadButton) {
+    uploadButton.disabled = false;
+
+    uploadButton.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.multiple = true;
+      input.accept = ".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx,.xls,.xlsx";
+
+      input.addEventListener("change", event => {
+        handleEstrichFileUpload(event, noteEl);
+      });
+
+      input.click();
+    });
+  }
+
+  if (mailButton) {
+    mailButton.disabled = false;
+    mailButton.addEventListener("click", () => sendEstrichAppointment(noteEl));
+  }
+
+  if (mailInput) {
+    mailInput.addEventListener("input", () => {
+      mailButton.disabled = !mailInput.value.trim();
+    });
+    mailButton.disabled = !mailInput.value.trim();
+  }
+
+  if (fileBox && !fileBox.dataset.ready) {
+    fileBox.dataset.ready = "1";
+    renderEstrichFileList(noteEl);
+  }
+}
+
+async function handleEstrichFileUpload(event, noteEl) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+
+  const currentFiles = getNoteFiles(noteEl);
+  const currentTotal = currentFiles.reduce((sum, file) => sum + (file.size || 0), 0);
+  const newTotal = files.reduce((sum, file) => sum + file.size, 0);
+  const maxTotalSize = 10 * 1024 * 1024;
+
+  if (currentTotal + newTotal > maxTotalSize) {
+    alert("Die maximale Gesamtgröße aller Dateien beträgt 10 MB.");
+    return;
+  }
+
+  for (const file of files) {
+    const cleanName = file.name.replace(/[\\/:*?"<>|]/g, "_");
+    const path = `${getEstrichUploadKey(noteEl)}/attachments/${Date.now()}_${cleanName}`;
+    const fileRef = storageRef(blazeStorage, path);
+    const uploadTask = uploadBytesResumable(fileRef, file);
+
+    await new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        null,
+        reject,
+        resolve
+      );
+    });
+
+    currentFiles.push({
+      name: file.name,
+      path,
+      size: file.size
+    });
+  }
+
+  setNoteFiles(noteEl, currentFiles);
+
+  logHistory(
+    "Dateien hochgeladen",
+    `${getNoteLabel(noteEl)} · ${files.length} Datei(en)`
+  );
+}
+
+function renderEstrichFileList(noteEl) {
+  const fileBox = noteEl.querySelector(".file-box");
+  if (!fileBox) return;
+
+  const files = getNoteFiles(noteEl);
+
+  if (!files.length) {
+    fileBox.innerHTML = "Keine Dateien hochgeladen.";
+    return;
+  }
+
+  fileBox.innerHTML = "";
+
+  files.forEach((file, index) => {
+    const div = document.createElement("div");
+    div.className = "estrich-file-item";
+    div.innerHTML = `
+      <span>${file.name}</span>
+      <button type="button" data-remove-file="${index}">Entfernen</button>
+    `;
+
+    div.querySelector("button").addEventListener("click", async e => {
+      e.stopPropagation();
+      await removeEstrichFile(noteEl, index);
+    });
+
+    fileBox.appendChild(div);
+  });
+}
+
+async function removeEstrichFile(noteEl, index) {
+  const files = getNoteFiles(noteEl);
+  const file = files[index];
+
+  if (file?.path) {
+    try {
+      await deleteObject(storageRef(blazeStorage, file.path));
+    } catch (err) {
+      console.warn("Datei konnte nicht gelöscht werden:", err);
+    }
+  }
+
+  files.splice(index, 1);
+  setNoteFiles(noteEl, files);
+}
+
+async function sendEstrichAppointment(noteEl) {
+  const texts = {};
+  noteEl.querySelectorAll("[data-text-field]").forEach(input => {
+    if (input.type === "radio") {
+      if (input.checked) texts[input.dataset.textField] = input.value;
+    } else {
+      texts[input.dataset.textField] = input.value;
+    }
+  });
+
+  const customerEmail = (texts.kundenmail || "").trim();
+
+  if (!customerEmail) {
+    alert("Bitte zuerst die E-Mail-Adresse des Kunden eintragen.");
+    return;
+  }
+
+  const sendMail = httpsCallable(blazeFunctions, "sendEstrichAppointmentMail");
+
+  try {
+    await sendMail({
+      to: customerEmail,
+      noteNumber: noteEl.dataset.noteNumber || "",
+      auftraggeber: texts.auftraggeber || "",
+      bv: texts.bv || "",
+      p: texts.p || "",
+      ort: texts.ort || "",
+      etage: texts.etage || "",
+      flaeche: texts.flaeche || "",
+      startdate: texts.startdate || "",
+      enddate: texts.enddate || "",
+      sonstiges: texts.sonstiges || ""
+    });
+
+    alert("Termin wurde per E-Mail an den Kunden gesendet.");
+
+    logHistory(
+      "Termin per E-Mail gesendet",
+      `${getNoteLabel(noteEl)} · an ${customerEmail}`
+    );
+
+  } catch (err) {
+    console.error("Terminmail Fehler:", err);
+    alert("Die E-Mail konnte nicht gesendet werden:\n" + (err?.message || err));
+  }
 }
 
 function saveCurrentBoard() {

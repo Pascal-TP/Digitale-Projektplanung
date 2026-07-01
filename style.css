@@ -1332,3 +1332,30 @@ body.view-only #logoutButton {
 .estrich-note.continues-next-note.minimized {
   border-right: 8px dashed #6b7280;
 }
+
+.estrich-file-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #d0d7de;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.estrich-file-item button {
+  width: auto;
+  padding: 4px 8px;
+  font-size: 12px;
+  box-shadow: none;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.file-box {
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+}
