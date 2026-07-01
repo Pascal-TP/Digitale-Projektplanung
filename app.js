@@ -514,6 +514,7 @@ function createNoteElement(day, noteData, options = {}) {
 
   if (noteData.minimized !== false) {
     clone.classList.add("minimized");
+    clone.style.transform = "";
   }
 
   const modeButton = clone.querySelector(".mode-toggle");
@@ -547,6 +548,7 @@ function createNoteElement(day, noteData, options = {}) {
       });
 
       clone.classList.remove("minimized");
+      keepOpenNoteInViewport(clone);
     } else {
       clone.querySelectorAll(".checklist-panel").forEach(panel => {
         panel.classList.add("hidden");
@@ -558,7 +560,10 @@ function createNoteElement(day, noteData, options = {}) {
     saveCurrentBoard();
 
     if (currentArea === "estrich") {
-      setTimeout(layoutEstrichSpans, 0);
+      setTimeout(() => {
+        layoutEstrichSpans();
+        keepOpenNoteInViewport(clone);
+      }, 0);
     }
   });
 
@@ -749,6 +754,31 @@ function createNoteElement(day, noteData, options = {}) {
   updateCompactView(clone);
 
   document.querySelector(`[data-day="${day}"] .dropzone`).appendChild(clone);
+}
+
+function keepOpenNoteInViewport(noteEl) {
+  if (!noteEl || noteEl.classList.contains("minimized")) return;
+
+  noteEl.style.transform = "";
+
+  requestAnimationFrame(() => {
+    const rect = noteEl.getBoundingClientRect();
+    const padding = 16;
+    let shiftX = 0;
+
+    if (rect.right > window.innerWidth - padding) {
+      shiftX = (window.innerWidth - padding) - rect.right;
+    }
+
+    if (rect.left + shiftX < padding) {
+      shiftX += padding - (rect.left + shiftX);
+    }
+
+    if (shiftX !== 0) {
+      noteEl.style.transform = `translateX(${shiftX}px)`;
+      noteEl.style.transformOrigin = "top left";
+    }
+  });
 }
 
 function setupWritingCanvas(canvas, imageData) {
@@ -2024,6 +2054,7 @@ function layoutEstrichSpans() {
     note.style.width = "";
     note.style.display = "";
     note.style.zIndex = "50";
+    note.style.transform = "";
   });
 
   const notes = [...document.querySelectorAll(".estrich-note.minimized")];
