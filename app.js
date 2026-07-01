@@ -393,7 +393,7 @@ function renderWeek(shouldSave = true) {
     visibleNotes.forEach(item => {
       createNoteElement(item.day, item.note, {
         sourceWeek: item.sourceWeek,
-        isContinuation: item.sourceWeek !== currentWeek
+        isContinuation: item.isContinuation
       });
     });
 
@@ -1863,7 +1863,6 @@ function getVisibleEstrichNotesForCurrentWeek() {
         const end = parseInputDate(endValue);
 
         if (!start || !end) return;
-
         if (end < weekStart || start > weekEnd) return;
 
         const visibleStart = start < weekStart ? weekStart : start;
@@ -1875,7 +1874,8 @@ function getVisibleEstrichNotesForCurrentWeek() {
         result.push({
           sourceWeek: Number(weekNo),
           day: DAYS[dayIndex],
-          note
+          note,
+          isContinuation: start < weekStart
         });
       });
     });
