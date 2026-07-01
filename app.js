@@ -336,8 +336,14 @@ function restoreOpenUiState(state) {
       setTimeout(() => {
         input.focus();
 
-        const pos = state.cursorPosition ?? input.value.length;
-        input.setSelectionRange(pos, pos);
+        if (
+          input.type !== "radio" &&
+          input.type !== "checkbox" &&
+          typeof input.setSelectionRange === "function"
+        ) {
+          const pos = state.cursorPosition ?? input.value.length;
+          input.setSelectionRange(pos, pos);
+        }
       }, 0);
     }
   }
@@ -430,6 +436,11 @@ async function addNote(day, noteData = null) {
 
   getWeek()[day].push(finalData);
   createNoteElement(day, finalData);
+
+  if (currentArea === "estrich") {
+    setTimeout(layoutEstrichSpans, 0);
+  }
+
   saveData();
 
   logHistory("Zettel erstellt", `Zettel #${formatNoteNumber(finalData)} wurde in KW ${currentWeek}, ${day} erstellt`);
@@ -494,6 +505,10 @@ function createNoteElement(day, noteData) {
     }
 
     saveCurrentBoard();
+
+    if (currentArea === "estrich") {
+      setTimeout(layoutEstrichSpans, 0);
+    }
   });
 
   clone.addEventListener("dragstart", e => {
