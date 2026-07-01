@@ -742,6 +742,10 @@ function createNoteElement(day, noteData, options = {}) {
   clone.querySelector(".delete").addEventListener("click", () => {
     const label = getNoteLabel(clone);
 
+    if (currentArea === "estrich") {
+      removeEstrichNoteFromData(clone.dataset.noteId);
+    }
+
     clone.remove();
     saveCurrentBoard();
 
@@ -770,6 +774,16 @@ function createNoteElement(day, noteData, options = {}) {
   updateCompactView(clone);
 
   document.querySelector(`[data-day="${day}"] .dropzone`).appendChild(clone);
+}
+
+function removeEstrichNoteFromData(noteId) {
+  Object.keys(data.weeks || {}).forEach(weekNo => {
+    const week = data.weeks[weekNo];
+
+    DAYS.forEach(day => {
+      week[day] = (week[day] || []).filter(note => note.id !== noteId);
+    });
+  });
 }
 
 function resetOpenNoteViewportStyles(noteEl) {
@@ -1310,23 +1324,83 @@ async function sendEstrichAppointment(noteEl) {
 }
 
 function saveCurrentBoard() {
+  if (currentArea === "estrich") {
+    saveEstrichBoard();
+    return;
+  }
+
   const week = emptyWeek();
 
   columns.forEach(column => {
     const day = column.dataset.day;
     column.querySelectorAll(".note").forEach(noteEl => {
-      const sourceWeek = Number(noteEl.dataset.sourceWeek || currentWeek);
-
-      if (currentArea === "estrich" && sourceWeek !== currentWeek) {
-        return;
-      }
-
       week[day].push(collectNote(noteEl));
     });
   });
 
   data.weeks[currentWeek] = week;
   saveData();
+}
+
+function saveEstrichBoard() {
+  const visibleNoteEls = [...document.querySelectorAll(".estrich-note")];
+  const visibleIds = visibleNoteEls.map(noteEl => noteEl.dataset.noteId);
+
+  // Sichtbare Estrich-Zettel zuerst aus allen Wochen entfernen
+  Object.keys(data.weeks || {}).forEach(weekNo => {
+    const week = data.weeks[weekNo];
+    DAYS.forEach(day => {
+      week[day] = (week[day] || []).filter(note => !visibleIds.includes(note.id));
+    });
+  });
+
+  // Danach anhand Startdatum wieder korrekt einsortieren
+  visibleNoteEls.forEach(noteEl => {
+    const note = collectNote(noteEl);
+    const target = getEstrichStorageTarget(note);
+
+    if (!data.weeks[target.weekNo]) {
+      data.weeks[target.weekNo] = emptyWeek();
+    }
+
+    data.weeks[target.weekNo][target.day].push(note);
+  });
+
+  saveData();
+}
+
+function getEstrichStorageTarget(note) {
+  const start = parseInputDate(note.texts?.startdate);
+
+  if (!start) {
+    return {
+      weekNo: currentWeek,
+      day: "Montag"
+    };
+  }
+
+  const weekNo = getISOWeekFromDate(start);
+  const monday = getMondayOfISOWeek(weekNo, start.getFullYear());
+  const index = Math.max(
+    0,
+    Math.min(5, Math.round((start - monday) / 86400000))
+  );
+
+  return {
+    weekNo,
+    day: DAYS[index]
+  };
+}
+
+function getISOWeekFromDate(date) {
+  const copy = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNumber = copy.getUTCDay() || 7;
+
+  copy.setUTCDate(copy.getUTCDate() + 4 - dayNumber);
+
+  const yearStart = new Date(Date.UTC(copy.getUTCFullYear(), 0, 1));
+
+  return Math.ceil((((copy - yearStart) / 86400000) + 1) / 7);
 }
 
 function makeTextImage(text, width, height) {
