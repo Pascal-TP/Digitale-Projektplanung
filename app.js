@@ -133,6 +133,11 @@ menuToggle.addEventListener("click", () => {
   menuToggle.textContent = document.body.classList.contains("menu-collapsed")
     ? "☰ Menü öffnen"
     : "☰ Menü schließen";
+
+  if (currentArea === "estrich") {
+    setTimeout(layoutEstrichSpans, 50);
+    setTimeout(layoutEstrichSpans, 300);
+  }
 });
 
 document.getElementById("prevWeek").addEventListener("click", () => {
