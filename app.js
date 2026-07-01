@@ -504,6 +504,8 @@ function createNoteElement(day, noteData, options = {}) {
   const clone = activeTemplate.content.firstElementChild.cloneNode(true);
   clone.dataset.noteId = noteData.id;
 
+  console.log("Bereich:", currentArea, "isNew:", noteData.isNew);
+
   clone.dataset.noteNumber = formatNoteNumber(noteData);
 
   if (noteData.isNew) {
