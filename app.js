@@ -541,6 +541,7 @@ function createNoteElement(day, noteData, options = {}) {
         if (openNote !== clone) {
           openNote.classList.add("minimized");
           openNote.style.transform = "";
+          openNote.style.left = "";
 
           openNote.querySelectorAll(".checklist-panel").forEach(panel => {
             panel.classList.add("hidden");
@@ -556,6 +557,7 @@ function createNoteElement(day, noteData, options = {}) {
         clone.style.top = "";
         clone.style.width = "";
         clone.style.transform = "";
+        clone.style.left = "";
 
         layoutEstrichSpans();
         keepOpenNoteInViewport(clone);
@@ -772,6 +774,7 @@ function keepOpenNoteInViewport(noteEl) {
   if (!noteEl || noteEl.classList.contains("minimized")) return;
 
   noteEl.style.transform = "";
+  noteEl.style.left = "";
 
   requestAnimationFrame(() => {
     const rect = noteEl.getBoundingClientRect();
@@ -787,8 +790,8 @@ function keepOpenNoteInViewport(noteEl) {
     }
 
     if (shiftX !== 0) {
-      noteEl.style.transform = `translateX(${shiftX}px)`;
-      noteEl.style.transformOrigin = "top left";
+      noteEl.style.position = "relative";
+      noteEl.style.left = `${shiftX}px`;
     }
   });
 }
