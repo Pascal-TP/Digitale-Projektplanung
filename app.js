@@ -777,23 +777,27 @@ function resetOpenNoteViewportStyles(noteEl) {
 function keepOpenNoteInViewport(noteEl) {
   if (!noteEl || noteEl.classList.contains("minimized")) return;
 
-  resetOpenNoteViewportStyles(noteEl);
+  noteEl.style.transform = "";
+  noteEl.style.transformOrigin = "top left";
 
   requestAnimationFrame(() => {
-    const board = document.getElementById("board");
-    if (!board) return;
+    requestAnimationFrame(() => {
+      const rect = noteEl.getBoundingClientRect();
+      const padding = 16;
+      let shiftX = 0;
 
-    const boardRect = board.getBoundingClientRect();
-    const noteRect = noteEl.getBoundingClientRect();
-    const padding = 16;
+      if (rect.right > window.innerWidth - padding) {
+        shiftX = (window.innerWidth - padding) - rect.right;
+      }
 
-    if (noteRect.right > boardRect.right - padding) {
-      board.scrollLeft += noteRect.right - boardRect.right + padding;
-    }
+      if (rect.left + shiftX < padding) {
+        shiftX += padding - (rect.left + shiftX);
+      }
 
-    if (noteRect.left < boardRect.left + padding) {
-      board.scrollLeft -= boardRect.left + padding - noteRect.left;
-    }
+      noteEl.style.transform = shiftX !== 0
+        ? `translateX(${shiftX}px)`
+        : "";
+    });
   });
 }
 
