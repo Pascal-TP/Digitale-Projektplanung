@@ -780,31 +780,20 @@ function keepOpenNoteInViewport(noteEl) {
   resetOpenNoteViewportStyles(noteEl);
 
   requestAnimationFrame(() => {
-    const rect = noteEl.getBoundingClientRect();
+    const board = document.getElementById("board");
+    if (!board) return;
+
+    const boardRect = board.getBoundingClientRect();
+    const noteRect = noteEl.getBoundingClientRect();
     const padding = 16;
-    const availableWidth = window.innerWidth - padding * 2;
-    const width = Math.min(rect.width, availableWidth);
 
-    let left = rect.left;
-
-    if (left + width > window.innerWidth - padding) {
-      left = window.innerWidth - padding - width;
+    if (noteRect.right > boardRect.right - padding) {
+      board.scrollLeft += noteRect.right - boardRect.right + padding;
     }
 
-    if (left < padding) {
-      left = padding;
+    if (noteRect.left < boardRect.left + padding) {
+      board.scrollLeft -= boardRect.left + padding - noteRect.left;
     }
-
-    const top = Math.max(padding, rect.top);
-
-    noteEl.classList.add("viewport-open-note");
-    noteEl.style.position = "fixed";
-    noteEl.style.left = `${left}px`;
-    noteEl.style.top = `${top}px`;
-    noteEl.style.width = `${width}px`;
-    noteEl.style.maxWidth = `${width}px`;
-    noteEl.style.transform = "";
-    noteEl.style.zIndex = "9999";
   });
 }
 
