@@ -540,6 +540,7 @@ function createNoteElement(day, noteData, options = {}) {
       document.querySelectorAll(".note:not(.minimized)").forEach(openNote => {
         if (openNote !== clone) {
           openNote.classList.add("minimized");
+          openNote.style.transform = "";
 
           openNote.querySelectorAll(".checklist-panel").forEach(panel => {
             panel.classList.add("hidden");
@@ -548,23 +549,34 @@ function createNoteElement(day, noteData, options = {}) {
       });
 
       clone.classList.remove("minimized");
-      keepOpenNoteInViewport(clone);
+
+      if (currentArea === "estrich") {
+        clone.style.position = "relative";
+        clone.style.left = "";
+        clone.style.top = "";
+        clone.style.width = "";
+        clone.style.transform = "";
+
+        layoutEstrichSpans();
+        keepOpenNoteInViewport(clone);
+      } else {
+        keepOpenNoteInViewport(clone);
+      }
+
     } else {
       clone.querySelectorAll(".checklist-panel").forEach(panel => {
         panel.classList.add("hidden");
       });
 
       clone.classList.add("minimized");
+      clone.style.transform = "";
+
+      if (currentArea === "estrich") {
+        layoutEstrichSpans();
+      }
     }
 
     saveCurrentBoard();
-
-    if (currentArea === "estrich") {
-      setTimeout(() => {
-        layoutEstrichSpans();
-        keepOpenNoteInViewport(clone);
-      }, 0);
-    }
   });
 
   clone.addEventListener("dragstart", e => {
