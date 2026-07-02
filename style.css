@@ -1100,9 +1100,16 @@ body.view-only #logoutButton {
 
 .estrich-top-row {
   display: flex;
-  justify-content: center;
-  gap: 180px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
   margin-top: -8px;
+}
+
+.bauleiter-group {
+  display: flex;
+  align-items: center;
+  gap: 30px;
 }
 
 .estrich-row {
