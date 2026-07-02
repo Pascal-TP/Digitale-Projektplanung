@@ -1101,7 +1101,7 @@ body.view-only #logoutButton {
 .estrich-top-row {
   display: flex;
   justify-content: center;
-  gap: 50px;
+  gap: 180px;
   margin-top: -8px;
 }
 
