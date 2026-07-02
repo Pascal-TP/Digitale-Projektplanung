@@ -635,6 +635,27 @@ function createNoteElement(day, noteData, options = {}) {
       ? String(input.checked)
       : input.value;
 
+    if (key === "pdslink") {
+      input.addEventListener("paste", e => {
+        e.preventDefault();
+
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        const httpIndex = text.indexOf("http://");
+        const httpsIndex = text.indexOf("https://");
+
+        let cleaned = text;
+
+        if (httpIndex >= 0) {
+          cleaned = text.substring(httpIndex);
+        } else if (httpsIndex >= 0) {
+          cleaned = text.substring(httpsIndex);
+        }
+
+        input.value = cleaned.trim();
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    }
+
     input.addEventListener("focus", () => {
       input.dataset.oldValue = input.value;
     });
@@ -2379,7 +2400,13 @@ function setupPdsButton(noteEl) {
     e.stopPropagation();
 
     const input = noteEl.querySelector('[data-text-field="pdslink"]');
-    const url = input ? input.value.trim() : "";
+    let url = input ? input.value.trim() : "";
+
+    const httpIndex = url.indexOf("http://");
+
+    if (httpIndex >= 0) {
+      url = url.substring(httpIndex);
+    }
 
     if (!url) {
       alert("Bitte zuerst den PDS-Projekt-Link einfügen.");
