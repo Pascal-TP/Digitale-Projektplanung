@@ -1397,3 +1397,55 @@ body.view-only #logoutButton {
 .estrich-bottom-row .pdslink {
   flex: 1;
 }
+
+.estrich-legend {
+  margin-top: 18px;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #d9dde3;
+  border-radius: 12px;
+}
+
+.estrich-legend.hidden {
+  display: none;
+}
+
+.estrich-legend h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.legend-color {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid #777;
+  display: inline-block;
+}
+
+.legend-lightgray {
+  background: #f2f2f2;
+}
+
+.legend-lightblue {
+  background: #dceeff;
+}
+
+.legend-lightgreen {
+  background: #dff5dc;
+}
+
+.legend-lightred {
+  background: #ffdede;
+}
+
+.legend-standard {
+  background: #fffdf7;
+}

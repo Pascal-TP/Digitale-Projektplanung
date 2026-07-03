@@ -2175,6 +2175,14 @@ async function switchArea(area) {
   peopleRef = peopleRefs[currentArea];
   historyRef = historyRefs[currentArea];
 
+  const legend = document.getElementById("estrichLegend");
+
+  if (currentArea === "estrich") {
+    legend.classList.remove("hidden");
+  } else {
+    legend.classList.add("hidden");
+  }
+
   document.getElementById("areaFbh").classList.toggle("active", currentArea === "fbh");
   document.getElementById("areaEstrich").classList.toggle("active", currentArea === "estrich");
 
