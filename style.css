@@ -577,13 +577,13 @@ input[type="checkbox"] {
 }
 
 .top-logo {
-  position: static;
-  transform: none;
-  max-height: 46px;
-  max-width: 150px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-height: 58px;
+  max-width: 260px;
   object-fit: contain;
   pointer-events: none;
-  flex-shrink: 0;
 }
 
 .trash-bin {
@@ -1451,50 +1451,6 @@ body.view-only #logoutButton {
   background: #fffdf7;
 }
 
-@media (max-width: 1600px) {
-  .top-logo {
-    display: none;
-  }
-
-  .topbar {
-    padding: 12px 16px;
-    gap: 12px;
-  }
-
-  .topbar h1 {
-    font-size: 24px;
-  }
-
-  .topbar p {
-    font-size: 13px;
-  }
-
-  .search-box input {
-    width: 260px;
-  }
-
-  .week-controls {
-    gap: 8px;
-  }
-
-  .week-controls button,
-  .week-drop {
-    padding: 8px 10px;
-    font-size: 13px;
-  }
-
-  .week-badge {
-    font-size: 18px;
-    padding: 8px 12px;
-    white-space: nowrap;
-  }
-
-  .area-button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-}
-
 @media (max-width: 1350px) {
   .week-drop {
     display: none;
@@ -1505,33 +1461,64 @@ body.view-only #logoutButton {
   }
 }
 
-.search-box {
-  flex-shrink: 1;
-}
-
-.search-box input {
-  max-width: 300px;
-}
-
-.week-controls {
-  flex-shrink: 0;
-}
-
-@media (max-width: 1500px) {
+@media (max-width: 1650px) {
   .top-logo {
     display: none;
   }
 
+  .topbar {
+    gap: 14px;
+    padding: 14px 18px;
+  }
+
+  .topbar h1 {
+    font-size: 26px;
+    white-space: nowrap;
+  }
+
+  .topbar p {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .search-box {
+    width: 300px;
+    flex: 0 0 300px;
+  }
+
+  .area-switch {
+    position: static;
+    transform: none;
+    flex: 0 0 auto;
+  }
+
+  .week-controls {
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .week-badge {
+    font-size: 20px;
+    padding: 8px 14px;
+    white-space: nowrap;
+  }
+
+  .week-controls button,
+  .week-drop,
+  .area-button {
+    padding: 8px 10px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 1400px) {
   .week-drop {
     display: none;
   }
 
-  .topbar h1 {
-    font-size: 24px;
-  }
-
-  .week-badge {
-    font-size: 18px;
-    padding: 8px 12px;
+  .search-box {
+    width: 260px;
+    flex-basis: 260px;
   }
 }
