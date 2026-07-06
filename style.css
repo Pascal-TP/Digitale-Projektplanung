@@ -68,7 +68,7 @@ button:hover {
 main {
   display: grid;
   grid-template-columns: 44px 340px 1fr;
-  height: calc(100vh - 92px);
+  min-height: calc(100vh - 92px);
   min-width: 1900px;
   transition: grid-template-columns .25s ease;
   position: relative;
@@ -95,6 +95,7 @@ body.menu-collapsed .toolbox {
 .board {
   grid-column: 3;
   grid-row: 1;
+  min-height: calc(100vh - 92px);
 }
 
 .menu-toggle {
