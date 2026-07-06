@@ -167,12 +167,31 @@ body.menu-collapsed .toolbox {
   color: #52616f;
 }
 
+:root {
+  --app-width: 2420px;
+}
+
+.topbar {
+  min-width: var(--app-width);
+}
+
+main {
+  min-width: var(--app-width);
+}
+
 .board {
   display: grid;
-  grid-template-columns: repeat(6, minmax(300px, 1fr));
+  grid-template-columns: repeat(6, 330px);
   gap: 12px;
   padding: 14px;
-  overflow: auto;
+  overflow: visible;
+  min-height: calc(100vh - 92px);
+  align-content: start;
+}
+
+.day-column {
+  width: 330px;
+  min-width: 330px;
 }
 
 .day-column {
