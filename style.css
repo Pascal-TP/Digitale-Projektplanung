@@ -7,11 +7,12 @@ body {
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
   background: #eef1f4;
   color: #17202a;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .topbar {
   height: 92px;
+  min-width: 1900px;
   background: #595f66;
   color: white;
   display: flex;
@@ -65,6 +66,7 @@ main {
   display: grid;
   grid-template-columns: 44px 340px 1fr;
   height: calc(100vh - 92px);
+  min-width: 1900px;
   transition: grid-template-columns .25s ease;
   position: relative;
 }
@@ -1449,76 +1451,4 @@ body.view-only #logoutButton {
 
 .legend-standard {
   background: #fffdf7;
-}
-
-@media (max-width: 1350px) {
-  .week-drop {
-    display: none;
-  }
-
-  .search-box input {
-    width: 220px;
-  }
-}
-
-@media (max-width: 1650px) {
-  .top-logo {
-    display: none;
-  }
-
-  .topbar {
-    gap: 14px;
-    padding: 14px 18px;
-  }
-
-  .topbar h1 {
-    font-size: 26px;
-    white-space: nowrap;
-  }
-
-  .topbar p {
-    font-size: 13px;
-    white-space: nowrap;
-  }
-
-  .search-box {
-    width: 300px;
-    flex: 0 0 300px;
-  }
-
-  .area-switch {
-    position: static;
-    transform: none;
-    flex: 0 0 auto;
-  }
-
-  .week-controls {
-    gap: 8px;
-    flex: 0 0 auto;
-  }
-
-  .week-badge {
-    font-size: 20px;
-    padding: 8px 14px;
-    white-space: nowrap;
-  }
-
-  .week-controls button,
-  .week-drop,
-  .area-button {
-    padding: 8px 10px;
-    font-size: 13px;
-    white-space: nowrap;
-  }
-}
-
-@media (max-width: 1400px) {
-  .week-drop {
-    display: none;
-  }
-
-  .search-box {
-    width: 260px;
-    flex-basis: 260px;
-  }
 }
