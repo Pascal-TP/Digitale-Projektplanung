@@ -15,9 +15,10 @@ body {
   min-width: 1900px;
   background: #595f66;
   color: white;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 470px 360px 180px 170px 1fr;
   align-items: center;
+  gap: 24px;
   padding: 16px 24px;
   border-bottom: 5px solid #4d8fd6;
 }
@@ -36,6 +37,8 @@ body {
   display: flex;
   gap: 14px;
   align-items: center;
+  justify-content: flex-end;
+  white-space: nowrap;
 }
 
 button {
@@ -579,13 +582,12 @@ input[type="checkbox"] {
 }
 
 .top-logo {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: static;
+  transform: none;
   max-height: 58px;
-  max-width: 260px;
+  max-width: 180px;
   object-fit: contain;
-  pointer-events: none;
+  justify-self: center;
 }
 
 .trash-bin {
@@ -953,10 +955,8 @@ body.view-only #logoutButton {
 }
 
 .area-switch {
-  position: absolute;
-  left: calc(50% + 145px);
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  transform: none;
   display: flex;
   gap: 8px;
   align-items: center;
