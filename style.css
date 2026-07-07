@@ -1325,9 +1325,8 @@ body.view-only #logoutButton {
 }
 
 .estrich-note.continuation-note:not(.minimized) {
-  width: min(1280px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
-  min-width: 0;
+  width: 980px;
+  max-width: 980px;
 }
 
 .estrich-note.continuation-note {
