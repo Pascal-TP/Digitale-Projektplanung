@@ -106,6 +106,7 @@ let lastOpenUiState = null;
 let presenceInterval = null;
 let unsubscribePresence = null;
 let unsubscribeHistory = null;
+let allHistoryItems = [];
 
 const PEOPLE_STORAGE_KEY = "digitaleMagnetwand_people_v1";
 
@@ -1763,6 +1764,19 @@ document.getElementById("historyClose").addEventListener("click", () => {
   document.getElementById("historyPanel").classList.add("hidden");
 });
 
+["historyDateFilter", "historyUserFilter", "historyActionFilter", "historySearchFilter"].forEach(id => {
+  document.getElementById(id).addEventListener("input", renderHistoryList);
+  document.getElementById(id).addEventListener("change", renderHistoryList);
+});
+
+document.getElementById("historyResetFilter").addEventListener("click", () => {
+  document.getElementById("historyDateFilter").value = "all";
+  document.getElementById("historyUserFilter").value = "all";
+  document.getElementById("historyActionFilter").value = "all";
+  document.getElementById("historySearchFilter").value = "";
+  renderHistoryList();
+});
+
 async function logHistory(action, details = "") {
   if (!canEdit()) return;
 
@@ -1780,10 +1794,7 @@ function subscribeToHistory() {
   const q = query(historyRef, orderBy("createdAt", "desc"));
 
   unsubscribeHistory = onSnapshot(q, snapshot => {
-    const list = document.getElementById("historyList");
-    list.innerHTML = "";
-
-    let lastDateKey = "";
+    allHistoryItems = [];
 
     snapshot.forEach(docSnap => {
       const item = docSnap.data();
@@ -1792,36 +1803,85 @@ function subscribeToHistory() {
         ? item.createdAt.toDate()
         : null;
 
-      const dateKey = createdAt
-        ? createdAt.toLocaleDateString("de-DE")
-        : "Ohne Datum";
-
-      const timeText = createdAt
-        ? createdAt.toLocaleTimeString("de-DE", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-        : "";
-
-      if (dateKey !== lastDateKey) {
-        const dateHeader = document.createElement("div");
-        dateHeader.className = "history-date-header";
-        dateHeader.textContent = dateKey;
-        list.appendChild(dateHeader);
-
-        lastDateKey = dateKey;
-      }
-
-      const div = document.createElement("div");
-      div.className = "history-item";
-      div.innerHTML = `
-        <strong>${item.action}</strong>
-        <div>${item.details || ""}</div>
-        <div class="history-meta">${timeText} · ${item.userEmail || "Unbekannt"} · KW ${item.week || "-"}</div>
-      `;
-
-      list.appendChild(div);
+      allHistoryItems.push({
+        ...item,
+        createdAtDate: createdAt,
+        dateKey: createdAt ? createdAt.toLocaleDateString("de-DE") : "Ohne Datum",
+        timeText: createdAt
+          ? createdAt.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })
+          : ""
+      });
     });
+
+    updateHistoryFilters();
+    renderHistoryList();
+  });
+}
+
+function updateHistoryFilters() {
+  fillHistorySelect("historyDateFilter", "Alle Daten", [...new Set(allHistoryItems.map(i => i.dateKey))]);
+  fillHistorySelect("historyUserFilter", "Alle Benutzer", [...new Set(allHistoryItems.map(i => i.userEmail || "Unbekannt"))]);
+  fillHistorySelect("historyActionFilter", "Alle Aktionen", [...new Set(allHistoryItems.map(i => i.action || "Unbekannt"))]);
+}
+
+function fillHistorySelect(id, label, values) {
+  const select = document.getElementById(id);
+  const currentValue = select.value || "all";
+
+  select.innerHTML = `<option value="all">${label}</option>`;
+
+  values.filter(Boolean).forEach(value => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  });
+
+  select.value = [...select.options].some(o => o.value === currentValue)
+    ? currentValue
+    : "all";
+}
+
+function renderHistoryList() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+
+  const selectedDate = document.getElementById("historyDateFilter").value;
+  const selectedUser = document.getElementById("historyUserFilter").value;
+  const selectedAction = document.getElementById("historyActionFilter").value;
+  const searchText = document.getElementById("historySearchFilter").value.toLowerCase().trim();
+
+  let lastDateKey = "";
+
+  allHistoryItems.forEach(item => {
+    const user = item.userEmail || "Unbekannt";
+    const action = item.action || "Unbekannt";
+    const details = item.details || "";
+
+    if (selectedDate !== "all" && item.dateKey !== selectedDate) return;
+    if (selectedUser !== "all" && user !== selectedUser) return;
+    if (selectedAction !== "all" && action !== selectedAction) return;
+
+    const searchable = `${item.dateKey} ${item.timeText} ${user} ${action} ${details} KW ${item.week || ""}`.toLowerCase();
+    if (searchText && !searchable.includes(searchText)) return;
+
+    if (item.dateKey !== lastDateKey) {
+      const dateHeader = document.createElement("div");
+      dateHeader.className = "history-date-header";
+      dateHeader.textContent = item.dateKey;
+      list.appendChild(dateHeader);
+      lastDateKey = item.dateKey;
+    }
+
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <strong>${action}</strong>
+      <div>${details}</div>
+      <div class="history-meta">${item.timeText} · ${user} · KW ${item.week || "-"}</div>
+    `;
+
+    list.appendChild(div);
   });
 }
 

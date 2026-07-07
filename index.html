@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Digitale Projektplanung - V1</title>
-  <link rel="stylesheet" href="style.css?v=20260703-19" />
+  <link rel="stylesheet" href="style.css?v=20260703-20" />
 </head>
 
 <body>
@@ -166,6 +166,25 @@
           <h3>Historie</h3>
           <button id="historyClose">×</button>
         </div>
+
+        <div class="history-filter">
+          <select id="historyDateFilter">
+            <option value="all">Alle Daten</option>
+          </select>
+
+          <select id="historyUserFilter">
+            <option value="all">Alle Benutzer</option>
+          </select>
+
+          <select id="historyActionFilter">
+            <option value="all">Alle Aktionen</option>
+          </select>
+
+          <input id="historySearchFilter" type="text" placeholder="Suche..." />
+
+          <button id="historyResetFilter" type="button">Filter löschen</button>
+        </div>
+
         <div id="historyList" class="history-list"></div>
       </div>
     </aside>
@@ -481,7 +500,7 @@
     </article>
   </template>
 
-  <script type="module" src="app.js?v=20260703-19"></script>
+  <script type="module" src="app.js?v=20260703-20"></script>
 </body>
 
 </html>

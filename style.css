@@ -1562,3 +1562,31 @@ body.view-only #logoutButton {
   border-left: 5px solid #4d8fd6;
   border-radius: 8px;
 }
+
+.history-filter {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 10px;
+  background: #eef2f7;
+  border-radius: 12px;
+}
+
+.history-filter select,
+.history-filter input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0 8px;
+  font-weight: 700;
+}
+
+.history-filter button {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: #1f2933;
+  color: white;
+}
