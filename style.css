@@ -1511,20 +1511,26 @@ body.view-only #logoutButton {
   body.printing-single-note .topbar,
   body.printing-single-note .menu-toggle,
   body.printing-single-note .toolbox,
-  body.printing-single-note .day-column,
+  body.printing-single-note .day-column:not(:has(.print-target-note)),
   body.printing-single-note .note:not(.print-target-note) {
     display: none !important;
   }
 
   body.printing-single-note,
   body.printing-single-note main,
-  body.printing-single-note .board {
+  body.printing-single-note .board,
+  body.printing-single-note .day-column {
     display: block !important;
     width: auto !important;
     min-width: 0 !important;
     height: auto !important;
     overflow: visible !important;
     background: white !important;
+    padding: 0 !important;
+  }
+
+  body.printing-single-note .day-column h2 {
+    display: none !important;
   }
 
   body.printing-single-note .print-target-note {
