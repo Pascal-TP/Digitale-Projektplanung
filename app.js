@@ -10,7 +10,6 @@ import {
   addDoc,
   query,
   orderBy,
-  limit,
   serverTimestamp,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -1778,25 +1777,47 @@ async function logHistory(action, details = "") {
 }
 
 function subscribeToHistory() {
-  const q = query(historyRef, orderBy("createdAt", "desc"), limit(50));
+  const q = query(historyRef, orderBy("createdAt", "desc"));
 
   unsubscribeHistory = onSnapshot(q, snapshot => {
     const list = document.getElementById("historyList");
     list.innerHTML = "";
 
+    let lastDateKey = "";
+
     snapshot.forEach(docSnap => {
       const item = docSnap.data();
 
-      const date = item.createdAt && item.createdAt.toDate
-        ? item.createdAt.toDate().toLocaleString("de-DE")
+      const createdAt = item.createdAt && item.createdAt.toDate
+        ? item.createdAt.toDate()
+        : null;
+
+      const dateKey = createdAt
+        ? createdAt.toLocaleDateString("de-DE")
+        : "Ohne Datum";
+
+      const timeText = createdAt
+        ? createdAt.toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit"
+        })
         : "";
+
+      if (dateKey !== lastDateKey) {
+        const dateHeader = document.createElement("div");
+        dateHeader.className = "history-date-header";
+        dateHeader.textContent = dateKey;
+        list.appendChild(dateHeader);
+
+        lastDateKey = dateKey;
+      }
 
       const div = document.createElement("div");
       div.className = "history-item";
       div.innerHTML = `
         <strong>${item.action}</strong>
         <div>${item.details || ""}</div>
-        <div class="history-meta">${date} · ${item.userEmail || "Unbekannt"} · KW ${item.week || "-"}</div>
+        <div class="history-meta">${timeText} · ${item.userEmail || "Unbekannt"} · KW ${item.week || "-"}</div>
       `;
 
       list.appendChild(div);
