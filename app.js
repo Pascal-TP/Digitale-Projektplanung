@@ -609,6 +609,7 @@ function createNoteElement(day, noteData, options = {}) {
     input.checked = !!(noteData.checks && noteData.checks[key]);
     input.addEventListener("change", () => {
       markNoteAsEdited(clone);
+      applyNoteColor(clone);
       saveCurrentBoard();
 
       logHistory(
@@ -2175,12 +2176,15 @@ async function switchArea(area) {
   peopleRef = peopleRefs[currentArea];
   historyRef = historyRefs[currentArea];
 
-  const legend = document.getElementById("estrichLegend");
+  const estrichLegend = document.getElementById("estrichLegend");
+  const fbhLegend = document.getElementById("fbhLegend");
 
   if (currentArea === "estrich") {
-    legend.classList.remove("hidden");
+    estrichLegend.classList.remove("hidden");
+    fbhLegend.classList.add("hidden");
   } else {
-    legend.classList.add("hidden");
+    estrichLegend.classList.add("hidden");
+    fbhLegend.classList.remove("hidden");
   }
 
   document.getElementById("areaFbh").classList.toggle("active", currentArea === "fbh");
@@ -2256,21 +2260,40 @@ function moveEstrichNoteToStartDay(noteEl) {
 }
 
 function applyNoteColor(noteEl) {
-  if (!noteEl.classList.contains("estrich-note")) return;
-
-  const checkedColor = noteEl.querySelector('[data-text-field="color"]:checked');
-  const color = checkedColor ? checkedColor.value : "";
+  if (!noteEl) return;
 
   noteEl.classList.remove(
     "estrich-color-grey",
     "estrich-color-blue",
     "estrich-color-green",
-    "estrich-color-red"
+    "estrich-color-red",
+    "fbh-color-mz",
+    "fbh-color-pp",
+    "fbh-color-as"
   );
 
-  if (color) {
-    noteEl.classList.add(`estrich-color-${color}`);
+  if (noteEl.classList.contains("estrich-note")) {
+    const checkedColor = noteEl.querySelector('[data-text-field="color"]:checked');
+    const color = checkedColor ? checkedColor.value : "";
+
+    if (color) {
+      noteEl.classList.add(`estrich-color-${color}`);
+    }
+
+    return;
   }
+
+  const mz = noteEl.querySelector('[data-check="mz"]')?.checked;
+  const pp = noteEl.querySelector('[data-check="cl"]')?.checked;
+  const as = noteEl.querySelector('[data-check="as"]')?.checked;
+
+  const selectedCount = [mz, pp, as].filter(Boolean).length;
+
+  if (selectedCount !== 1) return;
+
+  if (mz) noteEl.classList.add("fbh-color-mz");
+  if (pp) noteEl.classList.add("fbh-color-pp");
+  if (as) noteEl.classList.add("fbh-color-as");
 }
 
 function layoutEstrichSpans() {
