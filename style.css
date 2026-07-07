@@ -1324,10 +1324,7 @@ body.view-only #logoutButton {
   color: #6b7280;
 }
 
-.estrich-note.continuation-note:not(.minimized) {
-  width: 980px;
-  max-width: 980px;
-}
+
 
 .estrich-note.continuation-note {
   border-style: dashed;
