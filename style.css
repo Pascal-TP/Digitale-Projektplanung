@@ -1505,3 +1505,49 @@ body.view-only #logoutButton {
 .legend-fbh-as {
   background: #fff8d8;
 }
+
+@media print {
+
+  body.printing-single-note .topbar,
+  body.printing-single-note .menu-toggle,
+  body.printing-single-note .toolbox,
+  body.printing-single-note .day-column,
+  body.printing-single-note .note:not(.print-target-note) {
+    display: none !important;
+  }
+
+  body.printing-single-note,
+  body.printing-single-note main,
+  body.printing-single-note .board {
+    display: block !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  body.printing-single-note .print-target-note {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    cursor: default !important;
+    page-break-inside: avoid;
+  }
+
+  body.printing-single-note .print-target-note .note-actions,
+  body.printing-single-note .print-target-note .canvas-tools,
+  body.printing-single-note .print-target-note .upload-files,
+  body.printing-single-note .print-target-note .send-appointment,
+  body.printing-single-note .print-target-note .open-pds-button {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}

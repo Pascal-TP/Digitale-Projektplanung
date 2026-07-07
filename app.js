@@ -725,6 +725,11 @@ function createNoteElement(day, noteData, options = {}) {
       : "🧽 Radierer";
   });
 
+  clone.querySelector(".print-note").addEventListener("click", e => {
+    e.stopPropagation();
+    printSingleNote(clone);
+  });
+
   const assigned = clone.querySelector(".assigned");
   assigned.addEventListener("dragover", e => e.preventDefault());
   assigned.addEventListener("drop", e => {
@@ -2451,4 +2456,28 @@ function setupPdsButton(noteEl) {
 
     window.open(url, "_blank");
   });
+}
+
+function printSingleNote(noteEl) {
+  if (!noteEl) return;
+
+  const wasMinimized = noteEl.classList.contains("minimized");
+
+  if (wasMinimized) {
+    noteEl.classList.remove("minimized");
+  }
+
+  document.body.classList.add("printing-single-note");
+  noteEl.classList.add("print-target-note");
+
+  setTimeout(() => {
+    window.print();
+
+    noteEl.classList.remove("print-target-note");
+    document.body.classList.remove("printing-single-note");
+
+    if (wasMinimized) {
+      noteEl.classList.add("minimized");
+    }
+  }, 100);
 }
