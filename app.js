@@ -2461,6 +2461,22 @@ function setupPdsButton(noteEl) {
 function printSingleNote(noteEl) {
   if (!noteEl) return;
 
+  const hideHint = localStorage.getItem("hidePrintHint") === "true";
+
+  if (!hideHint) {
+    const dontShowAgain = confirm(
+      "Hinweis für den Ausdruck:\n\n" +
+      "Für einen optimalen Ausdruck empfehlen wir je nach Drucker eine Skalierung von ca. 70–80 %.\n" +
+      "Die Einstellung kann direkt im Druckdialog vorgenommen werden.\n\n" +
+      "OK = Hinweis künftig nicht mehr anzeigen\n" +
+      "Abbrechen = Hinweis weiterhin anzeigen"
+    );
+
+    if (dontShowAgain) {
+      localStorage.setItem("hidePrintHint", "true");
+    }
+  }
+
   const wasMinimized = noteEl.classList.contains("minimized");
 
   if (wasMinimized) {
