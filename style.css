@@ -2,6 +2,12 @@
   box-sizing: border-box;
 }
 
+:root {
+  --board-min-width: 2068px;
+  --app-open-width: 2452px;
+  --app-closed-width: 2112px;
+}
+
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
@@ -12,7 +18,7 @@ body {
 
 .topbar {
   height: 92px;
-  min-width: 1900px;
+  min-width: var(--app-open-width);
   background: #595f66;
   color: white;
   display: grid;
@@ -69,9 +75,14 @@ main {
   display: grid;
   grid-template-columns: 44px 340px 1fr;
   height: calc(100vh - 92px);
-  min-width: 1900px;
+  min-width: var(--app-open-width);
   transition: grid-template-columns .25s ease;
   position: relative;
+}
+
+body.menu-collapsed main {
+  grid-template-columns: 44px 0 1fr;
+  min-width: var(--app-closed-width);
 }
 
 body.menu-collapsed main {
@@ -168,10 +179,11 @@ body.menu-collapsed .toolbox {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(6, minmax(300px, 1fr));
+  grid-template-columns: repeat(6, minmax(330px, 1fr));
   gap: 12px;
   padding: 14px;
-  overflow: auto;
+  overflow: visible;
+  min-width: var(--board-min-width);
 }
 
 .day-column {
